@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>LontaraTrip</title>
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@700;900&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: #12100c;
+      display: flex; justify-content: center; align-items: flex-start;
+      min-height: 100vh;
+    }
+    .app {
+      width: 100%;
+      max-width: 390px;
+      min-height: 100vh;
+      background: #fffbe5;
+      position: relative;
+      overflow-x: hidden;
+    }
+    #page-landing { display: block; }
+    #page-login   { display: none; }
+    .navbar {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      height: 50px;
+      background: #fffbe5;
+      border-bottom: 1px solid rgba(0,0,0,.07);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .navbar-left { display: flex; align-items: center; gap: 7px; }
+    .nav-brand { font-weight: 700; font-size: .9rem; color: #1a1a1a; white-space: nowrap; }
+    .navbar-links { display: flex; gap: 10px; font-size: .7rem; font-weight: 600; }
+    .navbar-links a { text-decoration: none; color: #222; }
+    .btn-nav-login {
+      background: #3d5a2e; color: white;
+      border: none; border-radius: 6px;
+      padding: 6px 14px; font-size: .72rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; white-space: nowrap;
+    }
+    .hero { position: relative; height: 215px; overflow: hidden; }
+    .hero img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(10,25,8,.25) 0%, rgba(10,25,8,.72) 100%);
+    }
+    .hero-text {
+      position: absolute; bottom: 24px; left: 0; right: 0;
+      text-align: center; padding: 0 18px;
+    }
+    .hero-title {
+      font-family: 'Merriweather', serif; font-weight: 900;
+      font-size: 1.25rem; color: white; line-height: 1.3;
+      margin-bottom: 5px; text-shadow: 0 2px 6px rgba(0,0,0,.4);
+    }
+    .hero-sub { font-size: .75rem; color: rgba(255,255,255,.88); margin-bottom: 14px; line-height: 1.5; }
+
+    /* Tombol Buat Itinerary — tanpa fungsi, tampilan tetap sama */
+    .btn-hero {
+      background: #3d5a2e; color: white; border: none;
+      border-radius: 7px; padding: 9px 26px;
+      font-size: .84rem; font-weight: 700; font-family: inherit;
+      cursor: default; /* tidak ada pointer klik */
+    }
+
+    .section-smart { background: white; padding: 18px 14px 22px; }
+    .section-title {
+      font-family: 'Merriweather', serif; font-weight: 700;
+      font-size: .95rem; text-align: center; color: #1a1a1a; margin-bottom: 14px;
+    }
+    .dest-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-bottom: 6px; }
+    .dest-item { cursor: pointer; }
+    .dest-item img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 6px; display: block; }
+    .dest-name { font-size: .62rem; font-weight: 600; color: #111; margin-top: 3px; line-height: 1.2; }
+    .dest-type { font-size: .58rem; color: #888; }
+    .cat-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; margin-top: 4px; }
+    .cat-item { position: relative; border-radius: 7px; overflow: hidden; cursor: pointer; aspect-ratio: 1/1; }
+    .cat-item img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(.70); }
+    .cat-label {
+      position: absolute; bottom: 5px; left: 0; right: 0;
+      text-align: center; font-size: .64rem; font-weight: 700;
+      color: white; text-shadow: 0 1px 4px rgba(0,0,0,.6);
+    }
+    footer { background: #FFFBE5; padding: 18px 14px 12px; border-top: 1px solid rgba(0,0,0,.08); }
+    .footer-top { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+    .footer-logo { flex-shrink: 0; }
+    .footer-desc { font-size: .7rem; color: #555; line-height: 1.55; }
+    .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .fcol-title { font-size: .7rem; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+    .fcol-item { font-size: .67rem; color: #555; margin-bottom: 3px; line-height: 1.4; }
+    .fcol-item a { color: #555; text-decoration: none; }
+    .social-row { display: flex; gap: 6px; margin-top: 6px; }
+    .soc-btn {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .62rem; font-weight: 700; color: white; cursor: pointer;
+    }
+    .soc-ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+    .soc-wa { background: #25d366; }
+    .footer-copy { border-top: 1px solid rgba(0,0,0,.09); padding-top: 9px; font-size: .6rem; color: #999; text-align: center; line-height: 1.8; }
+    .heart { color: #e53935; }
+
+    /* LOGIN PAGE */
+    #page-login { min-height: 100vh; background: #fffBE5; flex-direction: column; }
+    .login-topbar { display: flex; align-items: center; gap: 10px; padding: 16px 16px 12px; border-bottom: 1px solid rgba(0,0,0,.07); }
+    .login-brand-name { font-weight: 700; font-size: 1rem; color: #1a1a1a; }
+    .login-body { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 28px 18px 32px; }
+    .login-card { background: white; border-radius: 12px; padding: 26px 22px 22px; width: 100%; box-shadow: 0 2px 16px rgba(0,0,0,.09); }
+    .login-title { font-family: 'Merriweather', serif; font-weight: 900; font-size: 1.35rem; color: #1a1a1a; margin-bottom: 5px; }
+    .login-sub { font-size: .78rem; color: #777; margin-bottom: 20px; line-height: 1.5; }
+    .inp { width: 100%; padding: 10px 12px; border: 1.5px solid #ccc; border-radius: 6px; font-size: .86rem; font-family: inherit; margin-bottom: 9px; outline: none; color: #1a1a1a; transition: border-color .2s; background: white; }
+    .inp:focus { border-color: #3d5a2e; }
+    .inp.err { border-color: #d32f2f; }
+    .err-txt { font-size: .7rem; color: #d32f2f; margin-top: -5px; margin-bottom: 7px; display: none; }
+    .err-txt.show { display: block; }
+    .login-options { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .chk-label { display: flex; align-items: center; gap: 7px; font-size: .8rem; color: #333; cursor: pointer; }
+    .chk-label input { accent-color: #3d5a2e; width: 15px; height: 15px; }
+    .forgot { font-size: .8rem; color: #333; font-weight: 600; text-decoration: none; }
+    .btn-submit { width: 100%; padding: 12px; background: #1a1a1a; color: white; border: 2px solid #1a1a1a; border-radius: 8px; font-size: .95rem; font-weight: 700; font-family: 'Merriweather', serif; cursor: pointer; margin-bottom: 13px; transition: background .2s; }
+    .btn-submit:hover { background: #3d5a2e; border-color: #3d5a2e; }
+    .or-divider { display: flex; align-items: center; gap: 10px; color: #aaa; font-size: .78rem; margin-bottom: 11px; }
+    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
+    .btn-goog { width: 100%; padding: 11px; background: white; color: #333; border: 1.5px solid #ccc; border-radius: 8px; font-size: .86rem; font-weight: 600; font-family: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 9px; transition: background .15s; }
+    .btn-goog:hover { background: #f5f5f5; }
+    .btn-goog svg { width: 17px; height: 17px; }
+    .signup-line { text-align: center; font-size: .8rem; color: #777; margin-top: 16px; }
+    .signup-line a { color: #1a1a1a; font-weight: 700; text-decoration: none; }
+    .loading-overlay { position: fixed; inset: 0; z-index: 999; background: rgba(20,20,20,.82); display: none; align-items: center; justify-content: center; }
+    .loading-overlay.show { display: flex; }
+    .loading-box { background: #3d5a2e; border-radius: 18px; width: 150px; height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; }
+    .dots-grid { display: grid; grid-template-columns: repeat(3,9px); gap: 5px; }
+    .dots-grid span { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.3); animation: dp 1.3s ease-in-out infinite; }
+    .dots-grid span:nth-child(1){animation-delay:.0s} .dots-grid span:nth-child(2){animation-delay:.13s} .dots-grid span:nth-child(3){animation-delay:.26s}
+    .dots-grid span:nth-child(4){animation-delay:.39s} .dots-grid span:nth-child(5){animation-delay:.52s} .dots-grid span:nth-child(6){animation-delay:.65s}
+    .dots-grid span:nth-child(7){animation-delay:.78s} .dots-grid span:nth-child(8){animation-delay:.91s} .dots-grid span:nth-child(9){animation-delay:1.04s}
+    @keyframes dp { 0%,80%,100%{background:rgba(255,255,255,.25)} 40%{background:rgba(255,255,255,1)} }
+    .loading-txt { color: white; text-align: center; line-height: 1.5; font-size: .76rem; }
+    .loading-txt strong { display: block; font-size: .88rem; margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══ LANDING PAGE ══ -->
+  <div id="page-landing">
+    <nav class="navbar">
+      <div class="navbar-left">
+        <img src="images/Logo LontaraTrip (potong).png" alt="Logo LontaraTrip"
+             style="width:32px;height:32px;object-fit:contain;"
+             onerror="this.style.display='none'"/>
+        <span class="nav-brand">LontaraTrip</span>
+      </div>
+      <div class="navbar-links">
+        <a href="#">Home</a>
+        <a href="#">Rekomendasi</a>
+        <a href="#">Destinasi</a>
+      </div>
+      <button class="btn-nav-login" onclick="showLogin()">Login</button>
+    </nav>
+
+    <div class="hero">
+      <img src="images/wp login.jpg" alt="Sulawesi Selatan"
+           onerror="this.src='https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=800&q=80'"/>
+      <div class="hero-overlay"></div>
+      <div class="hero-text">
+        <div class="hero-title">Selamat Datang di LontaraTrip</div>
+        <div class="hero-sub">Rencanakan perjalanan cerdas ke Sulawesi Selatan</div>
+
+        <!-- ✅ Tombol Buat Itinerary — TANPA onclick, tidak berfungsi -->
+        <button class="btn-hero">Buat Itinerary</button>
+
+      </div>
+    </div>
+
+    <div class="section-smart">
+      <div class="section-title">Smart Itinerary Sulsel</div>
+      <div class="dest-row">
+        <div class="dest-item">
+          <img src="images/tanjung bira.jpg" alt="Tanjung Bira"
+               onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&fit=crop'"/>
+          <div class="dest-name">Tanjung Bira</div><div class="dest-type">Pantai</div>
+        </div>
+        <div class="dest-item">
+          <img src="images/benteng rotterdam.jpg" alt="Benteng Rotterdam"
+               onerror="this.src='https://images.unsplash.com/photo-1520531158340-44015069e78e?w=200&fit=crop'"/>
+          <div class="dest-name">Benteng Rotterdam</div><div class="dest-type">Museum</div>
+        </div>
+        <div class="dest-item">
+          <img src="images/pallubasa.jpeg" alt="Pallubasa Serigala"
+               onerror="this.src='https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=200&fit=crop'"/>
+          <div class="dest-name">Pallubasa Serigala</div><div class="dest-type">Kuliner</div>
+        </div>
+        <div class="dest-item">
+          <img src="images/malino.jpg" alt="Hutan Pinus Malino"
+               onerror="this.src='https://images.unsplash.com/photo-1448375240586-882707db888b?w=200&fit=crop'"/>
+          <div class="dest-name">Hutan Pinus Malino</div><div class="dest-type">Pegunungan</div>
+        </div>
+      </div>
+      <div class="cat-row">
+        <div class="cat-item">
+          <img src="images/Pegunungan.png" alt="Pegunungan"
+               onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&fit=crop'"/>
+          <div class="cat-label">Pegunungan</div>
+        </div>
+        <div class="cat-item">
+          <img src="images/Pantai.png" alt="Pantai"
+               onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&fit=crop'"/>
+          <div class="cat-label">Pantai</div>
+        </div>
+        <div class="cat-item">
+          <img src="images/Kuliner.png" alt="Kuliner"
+               onerror="this.src='https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&fit=crop'"/>
+          <div class="cat-label">Kuliner</div>
+        </div>
+        <div class="cat-item">
+          <img src="images/Museum.png" alt="Museum"
+               onerror="this.src='https://images.unsplash.com/photo-1533105079780-92b9be482077?w=200&fit=crop'"/>
+          <div class="cat-label">Museum</div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="footer-desc" style="display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;">
+        <img src="images/Logo LontaraTrip (potong).png"
+             style="width:30px;height:30px;object-fit:cover;border-radius:50%;flex-shrink:0;"
+             onerror="this.style.display='none'"/>
+        <p style="margin:0;font-size:.7rem;color:#555;line-height:1.55;">
+          Smart Itinerary untuk merencanakan perjalanan terbaik di Sulawesi Selatan secara mudah dan personal.
+        </p>
+      </div>
+
+      <div class="footer-grid">
+        <div>
+          <div class="fcol-title">Kontak</div>
+          <div class="fcol-item">Makassar, Sulawesi Selatan, Indonesia</div>
+          <div class="fcol-item"><a href="mailto:lontaratrip@gmail.com">lontaratrip@gmail.com</a></div>
+          <div class="fcol-item">0825-1436-2226</div>
+          <div class="social-row">
+            <!-- Instagram -->
+            <div class="soc-btn soc-ig" title="Instagram">
+              <svg viewBox="0 0 24 24" fill="white" width="13" height="13">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </div>
+            <!-- WhatsApp -->
+            <div class="soc-btn soc-wa" title="WhatsApp">
+              <svg viewBox="0 0 24 24" fill="white" width="13" height="13">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="fcol-title">Kebijakan S&amp;K</div>
+          <div class="fcol-item">• Kebijakan Privasi &amp; Keamanan</div>
+          <div class="fcol-item">• Kebijakan Penggunaan Website</div>
+        </div>
+      </div>
+
+      <div class="footer-copy">
+        © 2026 LontaraTrip. All Rights Reserved. &nbsp;|&nbsp; Made with <span class="heart">♥</span> in Indonesia
+      </div>
+    </footer>
+  </div>
+  <!-- ══ END LANDING ══ -->
+
+
+  <!-- ══ LOGIN PAGE ══ -->
+  <div id="page-login">
+    <div class="login-topbar">
+      <img src="images/Logo LontaraTrip (potong).png" alt="Logo LontaraTrip"
+           style="width:36px;height:36px;object-fit:contain;"
+           onerror="this.style.display='none'"/>
+      <span class="login-brand-name">LontaraTrip</span>
+    </div>
+    <div class="login-body">
+      <div class="login-card">
+        <div class="login-title">Login ke LontaraTrip</div>
+        <div class="login-sub">Rencanakan perjalanan anda ke Sulawesi Selatan</div>
+        <input class="inp" id="f-email" type="email" placeholder="Email" oninput="clrErr('f-email','e-email')"/>
+        <div class="err-txt" id="e-email">Masukkan email yang valid.</div>
+        <input class="inp" id="f-pass" type="password" placeholder="Password" oninput="clrErr('f-pass','e-pass')"/>
+        <div class="err-txt" id="e-pass">Password tidak boleh kosong.</div>
+        <div class="login-options">
+          <label class="chk-label"><input type="checkbox"/> Ingat Saya</label>
+          <a href="#" class="forgot">Lupa Password?</a>
+        </div>
+        <button class="btn-submit" onclick="doLogin()">Login</button>
+        <div class="or-divider">atau</div>
+        <button class="btn-goog" onclick="doGoogle()">
+          <svg viewBox="0 0 24 24">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Login dengan Google
+        </button>
+        <div class="signup-line">Belum punya akun? <a href="#">Daftar</a></div>
+      </div>
+    </div>
+  </div>
+  <!-- ══ END LOGIN ══ -->
+
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-box">
+      <div class="dots-grid">
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+        <span></span><span></span><span></span>
+      </div>
+      <div class="loading-txt"><strong>Sedang Di Proses</strong>Sebentar lagi...</div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+
+<script>
+  const landingEl = document.getElementById('page-landing');
+  const loginEl   = document.getElementById('page-login');
+  const loadEl    = document.getElementById('loading-overlay');
+
+  function showLogin() {
+    landingEl.style.display = 'none';
+    loginEl.style.display = 'flex';
+    window.scrollTo(0,0);
+  }
+  function showLanding() {
+    loginEl.style.display = 'none';
+    landingEl.style.display = 'block';
+    window.scrollTo(0,0);
+  }
+  function clrErr(inp, err) {
+    document.getElementById(inp).classList.remove('err');
+    document.getElementById(err).classList.remove('show');
+  }
+  function setErr(inp, err, msg) {
+    document.getElementById(inp).classList.add('err');
+    const e = document.getElementById(err);
+    e.textContent = msg; e.classList.add('show');
+  }
+  function loading(ms, cb) {
+    loadEl.classList.add('show');
+    setTimeout(() => { loadEl.classList.remove('show'); cb && cb(); }, ms);
+  }
+  function doLogin() {
+    const email = document.getElementById('f-email').value.trim();
+    const pass  = document.getElementById('f-pass').value;
+    let ok = true;
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErr('f-email','e-email','Masukkan email yang valid.'); ok = false;
+    }
+    if (!pass) { setErr('f-pass','e-pass','Password tidak boleh kosong.'); ok = false; }
+    if (!ok) return;
+    loading(2200, () => { alert('Login berhasil! Selamat datang 🎉'); showLanding(); });
+  }
+  function doGoogle() {
+    loading(1800, () => { alert('Login dengan Google berhasil! 🎉'); showLanding(); });
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && loginEl.style.display !== 'none') doLogin();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Destinasi Pantai</title>
+
+
+
+
+<style>
+body{
+  margin:0;
+  background:#ddd;
+  display:flex;
+  justify-content:center;
+  font-family:Arial, sans-serif;
+}
+.phone{
+  width:390px;
+  height:844px;
+  background:#f5f5f5;
+  border-radius:30px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.header{
+  background:#3f6f4f;
+  color:#fff;
+  padding:20px;
+  border-radius:0 0 35px 35px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:relative;
+}
+.header h2{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  margin:0;
+  font-size:20px;
+}
+.back{ font-size:40px; cursor:pointer; }
+.bookmark{
+  width:22px; height:26px;
+  border:2px solid #fff; border-radius:6px;
+  position:relative;
+}
+.bookmark::after{
+  content:""; position:absolute;
+  bottom:8px; left:50%;
+  transform:translateX(-50%) rotate(-45deg);
+  width:10px; height:10px;
+  background:#3f6f4f;
+  border-left:2px solid #fff;
+  border-bottom:2px solid #fff;
+}
+.tabs{
+  display:flex;
+  justify-content:space-around;
+  padding:12px 10px;
+  font-size:13px;
+  font-weight:600;
+}
+.tabs span.active{ border-bottom:2px solid black; }
+.container{ flex:1; overflow-y:auto; padding:10px; }
+.card{ display:flex; gap:8px; margin-bottom:12px; }
+.card-img{
+  width:110px;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  overflow:hidden;
+  flex-shrink:0;
+}
+.card-img img{
+  width:100%;
+  height:80px;
+  object-fit:cover;
+  display:block;
+}
+.card-img p{ font-size:8px; padding:4px; margin:0; line-height:1.4; }
+.card-info{
+  flex:1;
+  background:#fff;
+  border-radius:8px;
+  padding:8px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  position:relative;
+}
+.card-info h3{ margin:0 0 2px; font-size:11px; }
+.card-info p{ font-size:9px; margin:2px 0; color:#555; }
+.rating{
+  position:absolute; top:5px; right:5px;
+  font-size:9px; background:#fff3cd;
+  padding:2px 6px; border-radius:5px;
+}
+button{
+  margin-top:5px; width:100%;
+  background:#3f6f4f; color:#fff;
+  border:none; padding:6px;
+  font-size:9px; border-radius:5px;
+  cursor:pointer;
+}
+button:hover{ background:#2d5238; }
+.footer{ background:#FFFBE5; padding:18px 14px 12px; border-top:1px solid rgba(0,0,0,.08); }
+.footer-top{ display:flex; gap:10px; align-items:flex-start; margin-bottom:14px; }
+.footer-desc{ font-size:.7rem; color:#555; line-height:1.55; margin:0; }
+.footer-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.fcol-title{ font-size:.7rem; font-weight:700; color:#1a1a1a; margin-bottom:6px; }
+.fcol-item{ font-size:.67rem; color:#555; margin-bottom:3px; line-height:1.4; }
+.fcol-item a{ color:#555; text-decoration:none; }
+.social-row{ display:flex; gap:6px; margin-top:6px; }
+.soc-btn{ width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.62rem; font-weight:700; color:white; cursor:pointer; }
+.soc-ig{ background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+.soc-wa{ background:#25d366; }
+.footer-copy{ border-top:1px solid rgba(0,0,0,.09); padding-top:9px; font-size:.6rem; color:#999; text-align:center; line-height:1.8; }
+.heart{ color:#e53935; }
+</style>
+</head>
+<body>
+<div class="phone">
+
+
+
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="back">›</div>
+    <h2>Destinasi</h2>
+    <div class="bookmark"></div>
+  </div>
+
+
+
+
+  <!-- TAB -->
+  <div class="tabs">
+    <span>Pegunungan</span>
+    <span class="active">Pantai</span>
+    <span>Kuliner</span>
+    <span>Museum</span>
+  </div>
+
+
+
+
+  <!-- CONTENT -->
+  <div class="container">
+
+
+
+
+    <script>
+const data = [
+  {
+    nama: "Pantai Apparalang",
+    gambar: "images/apparalang.jpg",
+    deskripsi: "Pemandangan tebing karang memanjang laut biru jernih, dan spot cliff jumping yang memacu adrenalin.",
+    lokasi: "Dusun Kadien, Ara, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan",
+    harga: "Harga: Mulai dari 5.000",
+    aktivitas: "Aktivitas: Berenang, Panorama Laut, Fotografi",
+    rating: ""
+  },
+  {
+    nama: "Tanjung Palette",
+    gambar: "images/tanjung palette.jpg",
+    deskripsi: "Pemandangan tebing karang terjal yang berbatasan langsung dengan laut biru jernih Teluk Bone",
+    lokasi: "Jl. Tj. Raya No.1, Pallette, Kec. Tanete Riattang Tim., Kabupaten Bone, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Fotografi, Berenang, Panorama, Wahana, Diving",
+    rating: ""
+  },
+  {
+    nama: "Taman Nasional Taka Bonerate",
+    gambar: "images/taman nasional taka bonerate.jpg",
+    deskripsi: "Kawasan atol (karang cincin) terbesar ketiga di dunia, dengan keindahan terumbu karang yang luas dan utuh.",
+    lokasi: "Jl. S. Parman No.40, Pulau Tinabo Besar, Kec. Taka Bonerate, Kab. Kepulauan Selayar, Sulawesi Selatan",
+    harga: "Harga: WNI Rp5.000 dan WNA Rp150.000",
+    aktivitas: "Aktivitas: Snorkeling, Island Hopping, Diving",
+    rating: ""
+  },
+  {
+    nama: "Pantai Panrang Luhu",
+    gambar: "images/panrang luhu.jpg",
+    deskripsi: "Pantai ini menawarkan pasir putih halus, air jernih, pohon kelapa rindang, serta menyaksikan sunrise",
+    lokasi: "Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Berenang, Sunrise, Bersantai, Fotografi",
+    rating: ""
+  },
+  {
+    nama: "Pantai Topejawa",
+    gambar: "images/topejawa.jpg",
+    deskripsi: "Destinasi wisata keluarga yang menawarkan kombinasi kolam renang, permainan air hingga spot foto.",
+    lokasi: "Topejawa, Kec. Mangarabombang, Kabupaten Takalar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp20.000",
+    aktivitas: "Aktivitas: Bersantai, Fotografi, Berenang",
+    rating: ""
+  },
+  {
+    nama: "Pantai Mattirotasi",
+    gambar: "images/pantai mattirotasi.jpg",
+    deskripsi: "Pantai terpanjang di Parepare dengan pemandangan laut, sunset, dan spot santai.",
+    lokasi: "Jl. Mattiro Tasi No.125, Kp. Baru, Kec. Bacukiki Bar., Kota Parepare, Sulawesi Selatan",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Bersantai, Fotografi, Menikmati sunset",
+    rating: ""
+  },
+  {
+    nama: "Lasonrai Beach",
+    gambar: "images/lasonrai beach.jpg",
+    deskripsi: "Pantai dengan pasir putih dan pemandangan laut jernih yang cocok untuk bersantai",
+    lokasi: "Ujunge, Batupute, Kec. Soppeng Riaja, Kabupaten Barru, Sulawesi Selatan",
+    harga: "Harga: Mulai dari 10.000",
+    aktivitas: "Aktivitas: Bersantai, Menikmati pemandangan",
+    rating: ""
+  },
+  {
+    nama: "Pantai Akkarena",
+    gambar: "images/pantai akkarenaa.jpg",
+    deskripsi: "Pantai pasir hitam yang populer untuk melihat matahari terbenam & jet ski, dengan taman bermain.",
+    lokasi: "Jalan Tanjung Bunga, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp10.000",
+    aktivitas: "Aktivitas: Bersantai, Fotografi, Berenang",
+    rating: ""
+  },
+  {
+    nama: "Pantai Lemo-Lemo",
+    gambar: "images/pantai lemolemo.jpg",
+    deskripsi: "Pantai dengan pasir putih dan air laut jernih serta suasana yang tenang.",
+    lokasi: "Tanah Lemo, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Bersantai, Fotografi, Berenang, Snorkeling",
+    rating: ""
+  },
+  {
+    nama: "Pantai Indah Bosowa",
+    gambar: "images/pantai bosowa.jpg",
+    deskripsi: "Pantai populer dengan panorama indah dan suasana santai dekat pusat kota Makassar.",
+    lokasi: "Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp10.000",
+    aktivitas: "Aktivitas: Bersantai, Fotografi, Berenang,Sunset",
+    rating: ""
+  },
+  {
+    nama: "Pantai Biru",
+    gambar: "images/pantai biru.jpg",
+    deskripsi: "Pantai dengan air laut biru jernih dan suasana tenang yang cocok untuk wisata keluarga.",
+    lokasi: "Jalan Tanjung Bunga, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Bersantai, Menikmati sunset, Berenang",
+    rating: ""
+  },
+  {
+    nama: "Pantai Pinang",
+    gambar: "images/pantai pinang.jpg",
+    deskripsi: "Pantai pasir putih terpencil yang tenang dengan pohon palem, snorkeling & resor ekologi di sekitarnya.",
+    lokasi: "Desa Lowa/Patilereng, Kecamatan Bontosikuyu, Kabupaten Kepulauan Selayar, Sulawesi Selatan.",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Snorkeling, Berenang, Bersantai",
+    rating: ""
+  },
+  {
+    nama: "Pantai Tanjung Bira",
+    gambar: "images/tanjung bira.jpg",
+    deskripsi: "Tanjung Bira adalah Pantai yang terkenal dengan pasir putihnya ini sangat nyaman dan mudah dijangkau.",
+    lokasi: "Bira, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp20.000",
+    aktivitas: "Aktivitas: Snorkeling, Berenang, Fotografi",
+    rating: "⭐ 4.6"
+  },
+  {
+    nama: "Pantai Losari",
+    gambar: "images/losari.jpg",
+    deskripsi: "Pantai ini terkenal dengan panorama lautnya yang indah dan menawan, terutama saat matahari terbenam.",
+    lokasi: "Jl. Somba OPU No.57, Maloku, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Menikmati Sunset, Fotografi, Kuliner",
+    rating: "⭐ 4.6"
+  },
+  {
+    nama: "Pantai Bara",
+    gambar: "images/pantai baraa.jpg",
+    deskripsi: "Pantai berpasir putih dengan air laut jernih, suasana tenang, dan pemandangan alam yang masih alami.",
+    lokasi: "Bira, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp15.000",
+    aktivitas: "Aktivitas: Berenang, Camping, FotFotografi, Menikmati sunset, Berenang",
+    rating: ""
+  },
+  {
+    nama: "Pantai Ujung Suso",
+    gambar: "images/pantai ujung suso.jpg",
+    deskripsi: "Pantai dengan nuansa Bali, pasir putih, dengan pemandangan laut indah yang unik.",
+    lokasi: "Mabonta, Kec. Burau, Kabupaten Luwu Timur, Sulawesi Selatan",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Bersantai, Fotografi, Berenang",
+    rating: ""
+  },
+  {
+    nama: "Pantai Marina",
+    gambar: "images/pantai marina.jpg",
+    deskripsi: "Pantai dengan konsep wisata keluarga, fasilitas lengkap, dan suasana santai di tepi laut.",
+    lokasi: "Baruga, Kec. Pajukukang, Kabupaten Bantaeng, Sulawesi Selatan",
+    harga: "Harga: Dewasa Rp40.000 dan Anak Rp10.000",
+    aktivitas: "Aktivitas: Bersantai, Menikmati pemandangan",
+    rating: ""
+  },
+  {
+    nama: "Pantai Seruni",
+    gambar: "images/pantai seruni.jpg",
+    deskripsi: "Pantai hasil reklamasi dengan pemandangan indah, bersih, dan menjadi ikon wisata Bantaeng.",
+    lokasi: "Jl. Mawar, Pallantikang, Kec. Bantaeng, Kabupaten Bantaeng, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp10.000",
+    aktivitas: "Aktivitas: Menikmati sunset, Jogging, Bersantai",
+    rating: ""
+  },
+  {
+    nama: "Pantai Galesong",
+    gambar: "images/pantai galesong.jpg",
+    deskripsi: "Pantai dengan pemandangan laut luas, pasir gelap, dan kawasan wisata yang nyaman.",
+    lokasi: "Desa Tamalate, Kecamatan Galesong Utara, Kabupaten Takalar, Sulawesi Selatan.",
+    harga: "Harga: Mulai dari Rp15.000",
+    aktivitas: "Aktivitas: Bersantai, Berenang, Bermain air",
+    rating: ""
+  },
+  {
+    nama: "Pantai Tanjung Bayang",
+    gambar: "images/pantai tanjung bayang.jpg",
+    deskripsi: "Pantai Tanjung Bayang adalah pantai tenang di Makassar, cocok untuk santai dan menikmati sunset.",
+    lokasi: "Selat, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Bersantai, Berenang, Bermain air",
+    rating: ""
+  },
+  {
+    nama: "Pantai Barugaya Punaga",
+    gambar: "images/pantai barugaya punaga.jpg",
+    deskripsi: "Pantai Barugaya Punaga adalah pantai indah di Takalar dengan air jernih dan suasana tenang.",
+    lokasi: "Punaga, Kec. Mangarabombang, Kabupaten Takalar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp15.000",
+    aktivitas: "Aktivitas: Bersantai, Menikmat Sunset, Bermain Air",
+    rating: ""
+  },
+  {
+    nama: "Pantai Anging Mammiri",
+    gambar: "images/pantai anging mammiri.jpg",
+    deskripsi: "Pantai Angin Mammiri adalah pantai santai di Makassar dengan angin sepoi dan suasana tenang.",
+    lokasi: "Jl. Metro Tj. Bunga, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp10.000",
+    aktivitas: "Aktivitas: Bersantai, Bermain Air, Menikmati Sunset",
+    rating: ""
+  },
+  {
+    nama: "Pantai Tanjung Barat Barombong",
+    gambar: "images/pantai barombong.jpg",
+    deskripsi: "Menawarkan hamparan laut terbuka dengan suasana lebih sepi di Makassar, cocok untuk melepas penat.",
+    lokasi: "Unnamed Road, Barombong, Kec. Tamalate, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Bersantai, Bermain Air, Menikmati Sunset",
+    rating: ""
+  },
+  {
+    nama: "Pantai Tanjung Layar Putih",
+    gambar: "images/pantai tanjung layar putih.jpg",
+    deskripsi: "Pantai Tanjung Layar Putih memiliki pasir terang dan panorama laut yang luas di Makassar.",
+    lokasi: "Unnamed Road, Tanjung Merdeka, Tamalate, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Bersantai, Fotografi., Menikmati Sunset",
+    rating: ""
+  },
+  {
+    nama: "Pantai Laguna",
+    gambar: "images/pantai laguna.jpg",
+    deskripsi: "Pantai Laguna adalah pantai dengan air jernih dan suasana tenang di Barru.",
+    lokasi: "Pao-Pao, Kec. Tanete Rilau, Kabupaten Barru, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp20.000",
+    aktivitas: "Aktivitas: Berenang, Menikmati Pemandangan",
+    rating: ""
+  },
+  {
+    nama: "Wisata Pantai Bintang Galesong",
+    gambar: "images/pantai galesong.jpg",
+    deskripsi: "Wisata Pantai Bintang Galesong adalah pantai populer dengan area rekreasi keluarga di Galesong, Takalar.",
+    lokasi: "Jl. Karaeng Salamaka Kassi Lompo, Boddia, Kec. Galesong, Kabupaten Takalar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp15.000",
+    aktivitas: "Aktivitas: Bermain Wahana Air, Bersantai",
+    rating: ""
+  },
+  {
+    nama: "Pantai Marumasa",
+    gambar: "images/pantai marumasa.jpg",
+    deskripsi: "Pantai Marumasa memiliki suasana pantai yang masih alami dengan garis pantai yang tenang di Bulukumba.",
+    lokasi: "Darubiah, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp3.000",
+    aktivitas: "Aktivitas: Bermain Air, Bersantai, Menikmati Sunset",
+    rating: ""
+  },
+  {
+    nama: "Sunset Quay Best View",
+    gambar: "images/sunset quay.jpg",
+    deskripsi: "Spot tepi laut untuk menikmati pemandangan matahari terbenam di Makassar.",
+    lokasi: "Kec. Makassar, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Menikmati Sunset, Bersanati, Fotografi",
+    rating: ""
+  },
+  {
+    nama: "Pantai Pulau Liukang Loe",
+    gambar: "images/pantai liukang loe.jpg",
+    deskripsi: "Terkenal dengan pasir putih halus, air laut biru toska yang sangat jernih, serta terumbu karang terawat",
+    lokasi: "Darubiah, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp10.000",
+    aktivitas: "Aktivitas: Snorkeling, Berenang, Menjelajah Pulau",
+    rating: ""
+  },
+  {
+    nama: "Pantai Pa'badilang",
+    gambar: "images/pantai pabadilang.jpg",
+    deskripsi: "Pantai Pabadilang memiliki garis pantai alami dengan suasana sepi di Kepulauan Selayar.",
+    lokasi: "Pa'baddilang, Kab. Kepulauan Selayar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Bersantai, Bermain Air, Menyusuri Pantai",
+    rating: ""
+  },
+  {
+    nama: "Pulau Bulupolo",
+    gambar: "images/pulau bulupolo.jpg",
+    deskripsi: "Menawarkan pasir putih bersih, air jernih, dan pemandangan pegunungan.",
+    lokasi: "Harapan, Kec. Malili, Kabupaten Luwu Timur, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp5.000",
+    aktivitas: "Aktivitas: Diving, Snorkling, Memancing",
+    rating: ""
+  },
+  {
+    nama: "Pulau Kodingareng Keke",
+    gambar: "images/kodingareng keke.jpg",
+    deskripsi: "Memiliki pemandangan laut yang masih terjaga dan tempat yang sempurna untuk snorkeling.",
+    lokasi: "Gusung, P. Kondingareng, Kec. Ujung Tanah, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Mulai dari Rp20.000",
+    aktivitas: "Aktivitas: Berenang, Snorkling, Menikmati Sunset",
+    rating: ""
+  },
+  {
+    nama: "Pantai Pulau Kayangan",
+    gambar: "images/pantai pulau kayangan.jpg",
+    deskripsi: "Destinasi wisata pantai berpasir putih seluas 1 hektar yang terletak hanya 0,8 km dari pusat kota Makassar.",
+    lokasi: "Lae-Lae, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Memancing, Snorkling, Menikmati Sunset",
+    rating: ""
+  },
+  {
+    nama: "Pulau Laelae",
+    gambar: "images/pulau laelae.jpg",
+    deskripsi: "Destinasi wisata pantai berpasir putih seluas 1 hektar yang terletak hanya 0,8 km dari pusat kota Makassar.",
+    lokasi: "Lae-Lae, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan",
+    harga: "Harga: Gratis",
+    aktivitas: "Aktivitas: Memancing, Snorkling, Menikmati Sunset",
+    rating: ""
+  },
+];
+
+
+
+
+data.forEach(item => {
+  document.write(`
+    <div class="card">
+      <div class="card-img">
+        <img src="${item.gambar}" alt="${item.nama}"
+             onerror="this.src='https://via.placeholder.com/150x80?text=No+Image'"/>
+       <p><strong style="font-size:10px;color:#000000;">${item.nama}</strong><br><span style="font-size:10px;color:#000000;">Pantai</span></p>
+      </div>
+      <div class="card-info">
+        ${item.rating ? `<div class="rating">${item.rating}</div>` : ""}
+        <h3>${item.nama}</h3>
+        <p>${item.deskripsi}</p>
+        <p>📍 ${item.lokasi}</p>
+        <p>💰 ${item.harga}</p>
+        <p>🎯 ${item.aktivitas}</p>
+        <button onclick="alert('${item.nama} ditambahkan ke Itinerary!')">Tambahkan ke Itinerary</button>
+      </div>
+    </div>
+  `);
+});
+</script>
+
+
+
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footer-top">
+        <img src="images/Logo LontaraTrip (potong).png" alt="Logo LontaraTrip"
+             style="width:30px;height:30px;object-fit:cover;border-radius:50%;flex-shrink:0;"
+             onerror="this.style.display='none'"/>
+        <p class="footer-desc">Smart Itinerary untuk merencanakan perjalanan terbaik di Sulawesi Selatan secara mudah dan personal.</p>
+      </div>
+      <div class="footer-grid">
+        <div>
+          <div class="fcol-title">Kontak</div>
+          <div class="fcol-item">Makassar, Sulawesi Selatan, Indonesia</div>
+          <div class="fcol-item"><a href="mailto:lontaratrip@gmail.com">lontaratrip@gmail.com</a></div>
+          <div class="fcol-item">0825-1436-2226</div>
+          <div class="social-row">
+            <div class="soc-btn soc-ig" title="Instagram">
+              <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+            <div class="soc-btn soc-wa" title="WhatsApp">
+              <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="fcol-title">Kebijakan S&amp;K</div>
+          <div class="fcol-item">• Kebijakan Privasi &amp; Keamanan</div>
+          <div class="fcol-item">• Kebijakan Penggunaan Website</div>
+        </div>
+      </div>
+      <div class="footer-copy">
+        © 2026 LontaraTrip. All Rights Reserved. &nbsp;|&nbsp; Made with <span class="heart">♥</span> in Indonesia
+      </div>
+    </div>
+
+
+
+
+  </div>
+</div>
+</body>
+</html>

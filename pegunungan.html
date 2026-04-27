@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Destinasi Pegunungan</title>
+
+
+
+
+<style>
+body{
+  margin:0;
+  background:#ddd;
+  display:flex;
+  justify-content:center;
+  font-family:Arial, sans-serif;
+}
+.phone{
+  width:390px;
+  height:844px;
+  background:#f5f5f5;
+  border-radius:30px;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+.header{
+  background:#3f6f4f;
+  color:#fff;
+  padding:20px;
+  border-radius:0 0 35px 35px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:relative;
+}
+.header h2{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  margin:0;
+  font-size:20px;
+}
+.back{ font-size:40px; margin-left:10px; cursor:pointer; }
+.bookmark{
+  width:22px; height:26px;
+  border:2px solid #fff; border-radius:6px;
+  position:relative; margin-right:10px;
+}
+.bookmark::after{
+  content:""; position:absolute;
+  bottom:8px; left:50%;
+  transform:translateX(-50%) rotate(-45deg);
+  width:10px; height:10px;
+  background:#3f6f4f;
+  border-left:2px solid #fff;
+  border-bottom:2px solid #fff;
+}
+.tabs{
+  display:flex;
+  justify-content:space-around;
+  padding:12px 10px;
+  font-size:13px;
+  font-weight:600;
+}
+.tabs span.active{ border-bottom:2px solid black; }
+.container{ flex:1; overflow-y:auto; padding:10px; }
+.card{ display:flex; gap:8px; margin-bottom:12px; }
+.card-img{
+  width:110px;
+  background:#fff;
+  border-radius:8px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  overflow:hidden;
+  flex-shrink:0;
+}
+.card-img img{
+  width:100%;
+  height:80px;
+  object-fit:cover;
+  display:block;
+}
+.card-img p{ font-size:8px; padding:4px; margin:0; line-height:1.4; }
+.card-info{
+  flex:1;
+  background:#fff;
+  border-radius:8px;
+  padding:8px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  position:relative;
+}
+.card-info h3{ margin:0 0 2px; font-size:11px; }
+.card-info p{ font-size:9px; margin:2px 0; color:#555; }
+.rating{
+  position:absolute; top:5px; right:5px;
+  font-size:9px; background:#fff3cd;
+  padding:2px 6px; border-radius:5px;
+}
+button{
+  margin-top:5px; width:100%;
+  background:#3f6f4f; color:#fff;
+  border:none; padding:6px;
+  font-size:9px; border-radius:5px;
+  cursor:pointer;
+}
+button:hover{ background:#2d5238; }
+.footer{ background:#FFFBE5; padding:18px 14px 12px; border-top:1px solid rgba(0,0,0,.08); }
+.footer-top{ display:flex; gap:10px; align-items:flex-start; margin-bottom:14px; }
+.footer-desc{ font-size:.7rem; color:#555; line-height:1.55; margin:0; }
+.footer-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.fcol-title{ font-size:.7rem; font-weight:700; color:#1a1a1a; margin-bottom:6px; }
+.fcol-item{ font-size:.67rem; color:#555; margin-bottom:3px; line-height:1.4; }
+.fcol-item a{ color:#555; text-decoration:none; }
+.social-row{ display:flex; gap:6px; margin-top:6px; }
+.soc-btn{ width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.62rem; font-weight:700; color:white; cursor:pointer; }
+.soc-ig{ background:radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+.soc-wa{ background:#25d366; }
+.footer-copy{ border-top:1px solid rgba(0,0,0,.09); padding-top:9px; font-size:.6rem; color:#999; text-align:center; line-height:1.8; }
+.heart{ color:#e53935; }
+</style>
+</head>
+<body>
+<div class="phone">
+
+
+
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="back">›</div>
+    <h2>Destinasi</h2>
+    <div class="bookmark"></div>
+  </div>
+
+
+
+
+  <!-- TAB -->
+  <div class="tabs">
+    <span class="active">Pegunungan</span>
+    <span>Pantai</span>
+    <span>Kuliner</span>
+    <span>Museum</span>
+  </div>
+
+
+
+
+  <!-- CONTENT -->
+  <div class="container">
+
+
+
+
+    <script>
+    const data = [
+      {
+        nama: "Rammang-Rammang",
+        gambar: "images/rammang2.jpg",
+        deskripsi: "Pemandangan tebing kapur purba, menyusuri Sungai Pute,gua prasejarah, serta suasana asri nan magis.",
+        lokasi: "Jl. Dermaga 2 Rammang - Rammang Desa Salenrang, Kabupaten Maros, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp5.000",
+        aktivitas: "Aktivitas: Susur Sungai, Eksplorasi Gua, Fotografi",
+        rating: ""
+      },
+      {
+        nama: "Bulu Dua",
+        gambar: "images/bulu dua.jpg",
+        deskripsi: "Panorama hutan tropis yang rimbun, danau yang indah, serta air terjun yang memukau.",
+        lokasi: "Gattareng Toa, Kec. Mario Riwawo, Kabupaten Soppeng, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp20.000",
+        aktivitas: "Aktivitas: Menyaksikan koloni kelelawar, Relaksasi",
+        rating: ""
+      },
+      {
+        nama: "Buttu Macca",
+        gambar: "images/buttu macca.jpg",
+        deskripsi: "panorama Gunung Nona dan Gunung Bambapuang yang memukau dari ketinggian, ada wahana flying fox.",
+        lokasi: "Bamba Puang, Kec. Anggeraja, Kabupaten Enrekang, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp10.000",
+        aktivitas: "Aktivitas: Menikmati wahana rekreasi, Relaksasi",
+        rating: ""
+      },
+      {
+        nama: "Negeri di Atas Awan",
+        gambar: "images/negeri diatas awan.jpg",
+        deskripsi: "Fenomena kabut tebal yang menyerupai lautan kapas di pagi hari, dipadukan dengan cahaya matahari terbit.",
+        lokasi: "Lolai, Kec. Kapala Pitu, Kabupaten Toraja Utara, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp15.000",
+        aktivitas: "Aktivitas: Lautan awan, Sunrise, Fotografi, Camping",
+        rating: ""
+      },
+      {
+        nama: "Lappa Laona",
+        gambar: "images/lappa laona.jpg",
+        deskripsi: "Lappa Laona ini padang rerumputan hijau yang luas Cocok untuk pengunjung yang hobby untuk berjelajah.",
+        lokasi: "Dusun Waruwue, Desa Harapan, Kec. Tanete Riaja, Kabupaten Barru, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp5.000",
+        aktivitas: "Aktivitas: Berkuda, Panomara, Fotografi, Camping",
+        rating: ""
+      },
+      {
+        nama: "Latimojong  (3.478 mdpl)",
+        gambar: "images/latimojong.jpg",
+        deskripsi: "Latimojong adalah pegunungan tertinggi di Sulawesi dengan alam yang masih asri.",
+        lokasi: "Dusun Karangan, Desa Latimojong, Kec. Baraka, Kabupaten Enrekang, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Fotografi, Panorama",
+        rating: ""
+      },
+      {
+        nama: "Rantekombola (3.455 mdpl)",
+        gambar: "images/rantekombola.jpg",
+        deskripsi: "Kawasan pegunungan yang menjadi lokasi Gunung Rantekombola sebagai puncak tertinggi.",
+        lokasi: "Uluwai, Kec. Mengkendek, Kabupaten Tana Toraja, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Fotografi, Panorama",
+        rating: ""
+      },
+      {
+        nama: "Balease (3.016 mdpl)",
+        gambar: "images/balease.jpg",
+        deskripsi: "Gunung Balease adalah puncak tertinggi Luwu Utara dengan medan ekstrem dan jalur hutan rapat.",
+        lokasi: "Kec. Mappedeceng, Kabupaten Luwu Utara, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Ekspedisi, Pendakian, Camping, Fotografi",
+        rating: ""
+      },
+      {
+        nama: "Gunung Karua (2.670 mdpl)",
+        gambar: "images/karua.jpg",
+        deskripsi: "Jalur yang lumayan sulit, kelestarian alamnya pun sangat terjaga.",
+        lokasi: "Kecamatan bituang, Makale, kabupaten Tana Toraja, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Wisata Alam, Fotografi.",
+        rating: ""
+      },
+      {
+        nama: "Gunung Kambuno (2.950 mdpl)",
+        gambar: "images/kambuno.jpg",
+        deskripsi: "Menawarkan keindahan alam khas pegunungan tropis dan salah satu destinasi pendakian di Luwu.",
+        lokasi: "Kec. Limbong (Rongkong), Kab. Luwu Utara, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Berkemah",
+        rating: ""
+      },
+      {
+        nama: "Gunung Sesean ( 2.100 mdpl)",
+        gambar: "images/sesean.jpg",
+        deskripsi: "Favorit para wisatawan karena menawarkan akses yang relatif mudah bagi pendaki pemula.",
+        lokasi: "Sesean Matallo, Kec. Sesean, Kabupaten Toraja Utara, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Trekking Santai, Fotografi",
+        rating: ""
+      },
+      {
+        nama: "Gunung Nona (1.580 mdpl)",
+        gambar: "images/nona.jpg",
+        deskripsi: "Menawarkan perpaduan pemandangan bukit karst yang hijau dan udara pegunungan yang sejuk.",
+        lokasi: "Rosoan, Kec. Enrekang, Kabupaten Enrekang, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Fotografi, Relaksi",
+        rating: ""
+      },
+      {
+        nama: "Lembah Lohe (1.930 mdpl)",
+        gambar: "images/lembah lohe.jpg",
+        deskripsi: "Lembah ini sering dijuluki sebagai Negeri Dongeng karena keindahan alamnya yang masih sangat alami",
+        lokasi : "Lembah Loe, Kec. Parigi, Kabupaten Gowa, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Memancing",
+        rating: ""
+      },
+      {
+        nama: "Bulu Baria (2.730 mdpl)",
+        gambar: "images/bulu baria.jpg",
+        deskripsi: "Dikenal sebagai salah satu gunung terbersih di Sulawesi dengan konsep Zero Waste Mountain.",
+        lokasi: "Desa Manimbahoi, Kecamatan Parigi, Kabupaten Gowa, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian Zero Wasre, Camping",
+        rating: ""
+      },
+      {
+        nama: "Bulusaraung (1.353 mdpl)",
+        gambar: "images/bulusaraung.jpg",
+        deskripsi: "Bagian dari Taman Nasional Bantimurung Bulusaraung yang berciri tebing terjal dan hutan tropis lebat.",
+        lokasi: "Tompo Bulu, Kec. Balocci, Kabupaten Pangkajene Dan Kepulauan, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Lautan Awan",
+        rating: ""
+      },
+      {
+        nama: "Hutan Pinus Malino",
+        gambar: "images/malino.jpg",
+        deskripsi: "Pemandangan hamparan pohon pinus yang luas dan hijau dengan udara sejuk, keunggulan kawasan wisata.",
+        lokasi: "Jl. Sultan Hasanuddin, Malino, Kec. Tinggimoncong, Kabupaten Gowa, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp10.000",
+        aktivitas: "Aktivitas: Fotografi Alam, Piknik, Naik Kuda",
+        rating: "⭐ 4.7"
+      },
+      {
+        nama: "Gunung Bahong Langi (1.988 mdpl)",
+        gambar: "images/gunung bahong langi.jpg",
+        deskripsi: "Terkenal dengan keindahan negeri di atas awan yang menakjubkan pada pagi hari.",
+        lokasi: "Bontojai, Kec. Bontocani, Kabupaten Bone, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Lautan Awan",
+        rating: ""
+      },
+      {
+        nama: "Gunung Tondong Karambu (1.700 mdpl)",
+        gambar: "images/gunung tondong karambu.jpg",
+        deskripsi: "Gunung ini merupakan kawasan karst terluas kedua di dunia, sementara yang terbesar ada di China.",
+        lokasi: "Gattareng, Kec. Pujananting, Kabupaten Barru, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Lautan Awan",
+        rating: ""
+      },
+      {
+        nama: "Gunung Kappire (1.100 mdpl)",
+        gambar: "images/gunung kappire.jpg",
+        deskripsi: "Masih banyak traveler yang belum mengetahui tempat ini karena suasananya masih asri.",
+        lokasi: "Pange, Palakka, Kec. Barru, Kabupaten Barru, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendakian, Camping, Lautan Awan",
+        rating: ""
+      },
+      {
+        nama: "Air Terjun Takapala",
+        gambar: "images/air terjun takapala.jpg",
+        deskripsi: "Salah satu destinasi wisata paling ikonik di kawasan dataran tinggi Malino, Kab. Gowa, Sulawesi Selatan.",
+        lokasi: "Bonto Lerung, Kec. Tinggimoncong, Kab. Gowa, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp3.000",
+        aktivitas: "Aktivitas: Berenang, Piknik, Menikmati Air Terjun",
+        rating: "⭐ 4.5"
+      },
+      {
+        nama: "Gunung Bawakaraeng (2.830 mdpl)",
+        gambar: "images/gunung bawakaraeng.jpg",
+        deskripsi: "Pendakian favorit dengan hutan lumut, pemandangan eksotis, dan suhu terdingin di wilayah tersebut.",
+        lokasi: "Gn. Perak, Kec. Sinjai Bar., Kabupaten Sinjai, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendaikian & Hiking, Fotografi",
+        rating: ""
+      },
+      {
+        nama: "Gunung Bambapuang (1.021 mdpl) ",
+        gambar: "images/gunung bambapuang.jpg",
+        deskripsi: "Gunung ini populer sebagai destinasi pendakian ringan dan menawarkan pemandangan alam yang indah.",
+        lokasi: "Gn. Perak, Kec. Sinjai Bar., Kabupaten Sinjai, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendaikian santai, Trail running",
+        rating: ""
+      },
+      {
+        nama: "Gunung Bulu Saukang (332 mdpl)",
+        gambar: "images/gunung bulu saukang.jpg",
+        deskripsi: "Menawarkan jalur menantang namun singkat, cocok untuk healing singkat dekat Makassar.",
+        lokasi: "Benteng Gajah, Kec. Tompobulu, Kabupaten Maros, Sulawesi Selatan",
+        harga: "Harga: Tidak memiliki harga tiket masuk resmi",
+        aktivitas: "Aktivitas: Pendaikian santai, Fotografi",
+        rating: ""
+      },
+      {
+        nama: "Danau Tanralili",
+        gambar: "images/danau tanralili.jpg",
+        deskripsi: "Danau yang terbentuk akibat longsoran gunung hingga membentuk cekungan ke dalam.",
+        lokasi: "Manimbahoi, Kec. Parigi, Kabupaten Gowa, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp5.000",
+        aktivitas: "Aktivitas: Pendaikian, Fotografi, Camping",
+        rating: ""
+      },
+      {
+        nama: "Lembah Ramma",
+        gambar: "images/lembah ramma.jpg",
+        deskripsi: "Di Lembah Ramma ini, Anda akan disuguhkan kesegaran dari pegunungan yang mengelilingi.",
+        lokasi: "Bonto Lerung, Kec. Tinggimoncong, Kabupaten Gowa, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp10.000",
+        aktivitas: "Aktivitas: Pendaikian, Bertamasya, Camping",
+        rating: ""
+      },
+      {
+        nama: "Pangngalleang toppa'",
+        gambar: "images/pangngalleang toppa.jpg",
+        deskripsi: "Desa Wisata ini memiliki keunikan yaitu tangga refleksi anti rematik.",
+        lokasi: "Pakatto, Kec. Bontomarannu, Kabupaten Gowa, Sulawesi Selatan",
+        harga: "Harga: Mulai Rp5.000",
+        aktivitas: "Aktivitas: Pendaikian santai, Terapi, Fotografi",
+        rating: ""
+      },
+    ];
+
+
+
+
+    data.forEach(item => {
+      document.write(`
+        <div class="card">
+          <div class="card-img">
+            <img src="${item.gambar}" alt="${item.nama}"
+                 onerror="this.src='https://via.placeholder.com/150x80?text=No+Image'"/>
+           <p><strong style="font-size:10px;color:#000000;">${item.nama}</strong><br><span style="font-size:10px;color:#000000;">Pegunungan</span></p>
+          </div>
+          <div class="card-info">
+            ${item.rating ? `<div class="rating">${item.rating}</div>` : ""}
+            <h3>${item.nama}</h3>
+            <p>${item.deskripsi}</p>
+            <p>📍 ${item.lokasi}</p>
+            <p>💰 ${item.harga}</p>
+            <p>🎯 ${item.aktivitas}</p>
+            <button onclick="alert('${item.nama} ditambahkan ke Itinerary!')">Tambahkan ke Itinerary</button>
+          </div>
+        </div>
+      `);
+    });
+    </script>
+
+
+
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footer-top">
+        <img src="images/Logo LontaraTrip (potong).png" alt="Logo LontaraTrip"
+             style="width:30px;height:30px;object-fit:cover;border-radius:50%;flex-shrink:0;"
+             onerror="this.style.display='none'"/>
+        <p class="footer-desc">Smart Itinerary untuk merencanakan perjalanan terbaik di Sulawesi Selatan secara mudah dan personal.</p>
+      </div>
+      <div class="footer-grid">
+        <div>
+          <div class="fcol-title">Kontak</div>
+          <div class="fcol-item">Makassar, Sulawesi Selatan, Indonesia</div>
+          <div class="fcol-item"><a href="mailto:lontaratrip@gmail.com">lontaratrip@gmail.com</a></div>
+          <div class="fcol-item">0825-1436-2226</div>
+          <div class="social-row">
+            <div class="soc-btn soc-ig" title="Instagram">
+              <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+            <div class="soc-btn soc-wa" title="WhatsApp">
+              <svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="fcol-title">Kebijakan S&amp;K</div>
+          <div class="fcol-item">• Kebijakan Privasi &amp; Keamanan</div>
+          <div class="fcol-item">• Kebijakan Penggunaan Website</div>
+        </div>
+      </div>
+      <div class="footer-copy">
+        © 2026 LontaraTrip. All Rights Reserved. &nbsp;|&nbsp; Made with <span class="heart">♥</span> in Indonesia
+      </div>
+    </div>
+
+
+
+
+  </div>
+</div>
+</body>
+</html>
+
