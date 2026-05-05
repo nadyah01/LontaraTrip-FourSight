@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>LontaraTrip - Smart Itinerary Sulsel</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; background: #e5e5e5; font-family: 'Poppins', sans-serif;
+  display: flex; justify-content: center; align-items: flex-start;
+}
+.app { width: 390px; min-height: 844px; background: #f5f5f5; position: relative; }
+.page { display: none; width: 100%; flex-direction: column; }
+.page.active { display: flex; }
+
+/* ===================== TOAST ===================== */
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #3B6E50; color: #fff; padding: 10px 22px; border-radius: 24px;
+  font-size: 12px; font-weight: 600; z-index: 9998; opacity: 0;
+  transition: opacity .3s; pointer-events: none;
+  white-space: nowrap; box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+.toast.show { opacity: 1; }
+
+/* ===================== NAVBAR ===================== */
+.navbar {
+  background: #fffbe5; padding: 12px 20px;
+  display: flex; align-items: center; gap: 12px;
+  border-bottom: 1px solid rgba(0,0,0,0.06); flex-shrink: 0;
+}
+.logo-circle { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.logo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.logo-placeholder { font-size: 18px; font-weight: 800; color: #3B6E50; font-family: serif; }
+.nav-brand { font-size: 16px; font-weight: 700; color: #1a1a1a; }
+
+/* ===================== PAGE 1 ===================== */
+.main { flex: 1; padding: 28px 20px 20px; display: flex; flex-direction: column; align-items: center; }
+.page-title { font-size: 24px; font-weight: 800; color: #1a1a1a; text-align: center; margin-bottom: 6px; }
+.page-sub { font-size: 13px; color: #666; text-align: center; margin-bottom: 24px; }
+.btn-buat { background: #3B6E50; color: #fff; border: none; border-radius: 8px; padding: 13px 48px; font-size: 14px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; margin-bottom: 28px; transition: background 0.18s; }
+.btn-buat:hover { background: #2d5a3d; }
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-bottom: 28px; }
+.cat-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.09); cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; }
+.cat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.14); }
+.mosaic { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 80px 80px; gap: 2px; background: #ddd; }
+.mosaic img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cat-label { padding: 10px 12px 12px; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: center; }
+.btn-lanjut { width: 100%; background: #3B6E50; color: #fff; border: none; border-radius: 10px; padding: 17px; font-size: 18px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: background 0.18s; flex-shrink: 0; }
+.btn-lanjut:hover { background: #2d5a3d; }
+
+/* ===================== PAGE 2 ===================== */
+.p2-main { flex: 1; padding: 36px 20px 24px; display: flex; flex-direction: column; align-items: center; }
+.p2-title { font-size: 26px; font-weight: 800; color: #1a1a1a; text-align: center; margin-bottom: 6px; }
+.p2-sub { font-size: 13px; color: #888; text-align: center; margin-bottom: 28px; }
+.hari-card { width: 100%; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 16px; cursor: pointer; transition: transform 0.18s, box-shadow 0.18s; border: 2px solid transparent; }
+.hari-card:hover { transform: translateY(-2px); box-shadow: 0 4px 18px rgba(0,0,0,0.13); }
+.hari-card.selected { border-color: #3B6E50; }
+.hari-card img { width: 100%; height: 130px; object-fit: cover; display: block; }
+.hari-card-label { padding: 12px 16px 14px; font-size: 15px; font-weight: 700; color: #1a1a1a; }
+
+/* ===================== PAGE DESTINASI ===================== */
+.dest-header { background: #3f6f4f; color: #fff; padding: 20px; border-radius: 0 0 35px 35px; display: flex; align-items: center; justify-content: space-between; position: relative; flex-shrink: 0; }
+.dest-header h2 { position: absolute; left: 50%; transform: translateX(-50%); margin: 0; font-size: 20px; font-weight: 700; font-family: 'Poppins', sans-serif; }
+.back-btn { font-size: 40px; cursor: pointer; line-height: 1; margin-left: 10px; user-select: none; }
+.bm-wrap { position: relative; flex-shrink: 0; cursor: pointer; margin-right: 10px; }
+.bookmark { width: 22px; height: 26px; border: 2px solid #fff; border-radius: 6px; position: relative; }
+.bookmark::after { content: ""; position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%) rotate(-45deg); width: 10px; height: 10px; background: #3f6f4f; border-left: 2px solid #fff; border-bottom: 2px solid #fff; }
+.bm-badge { position: absolute; top: -6px; right: -8px; background: #e53935; color: #fff; font-size: 8px; font-weight: 800; min-width: 16px; height: 16px; border-radius: 8px; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #3f6f4f; line-height: 1; }
+.bm-badge.show { display: flex; }
+.tabs { display: flex; justify-content: space-around; padding: 12px 10px; font-size: 13px; font-weight: 600; background: #fff; flex-shrink: 0; }
+.tabs span { cursor: pointer; padding-bottom: 4px; transition: border-color 0.15s; }
+.tabs span.active { border-bottom: 2px solid black; }
+.tabs span:hover { border-bottom: 2px solid #3f6f4f; }
+.selected-count-bar { background: #e8f5ee; border: 1px solid #3B6E50; border-radius: 8px; padding: 8px 12px; margin: 8px 10px 0; display: flex; align-items: center; justify-content: space-between; font-size: 12px; font-weight: 600; color: #3B6E50; flex-shrink: 0; }
+.selected-count-bar span { color: #1a1a1a; font-weight: 700; }
+.dest-container { flex: 1; overflow-y: auto; padding: 10px; background: #f5f5f5; }
+.card { display: flex; gap: 8px; margin-bottom: 12px; position: relative; }
+.card-img { width: 110px; background: #fff; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); overflow: hidden; flex-shrink: 0; }
+.card-img img { width: 100%; height: 80px; object-fit: cover; display: block; }
+.card-img p { font-size: 8px; padding: 4px; margin: 0; line-height: 1.4; }
+.card-info { flex: 1; background: #fff; border-radius: 8px; padding: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; transition: border 0.2s; }
+.card-info.selected-card { border: 2px solid #3B6E50; }
+.card-info h3 { margin: 0 0 2px; font-size: 11px; font-family: 'Poppins', sans-serif; }
+.card-info p { font-size: 9px; margin: 2px 0; color: #555; font-family: 'Poppins', sans-serif; }
+.rating { position: absolute; top: 5px; right: 5px; font-size: 9px; background: #fff3cd; padding: 2px 6px; border-radius: 5px; }
+.check-badge { position: absolute; top: 5px; right: 5px; width: 20px; height: 20px; background: #3B6E50; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 2; animation: popIn 0.25s ease; }
+.check-badge svg { width: 12px; height: 12px; }
+@keyframes popIn { 0%{transform:scale(0)} 70%{transform:scale(1.2)} 100%{transform:scale(1)} }
+.card-btn { margin-top: 5px; width: 100%; background: #3f6f4f; color: #fff; border: none; padding: 6px; font-size: 9px; border-radius: 5px; cursor: pointer; font-family: 'Poppins', sans-serif; transition: background 0.2s; }
+.card-btn:hover { background: #2d5238; }
+.card-btn.btn-selected { background: #e8f5ee; color: #3B6E50; border: 1px solid #3B6E50; }
+.card-btn.btn-selected:hover { background: #d0ecdb; }
+.btn-lanjut-dest { margin: 10px; width: calc(100% - 20px); background: #3B6E50; color: #fff; border: none; border-radius: 10px; padding: 15px; font-size: 15px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: background 0.18s; flex-shrink: 0; display: none; }
+.btn-lanjut-dest.visible { display: block; }
+.btn-lanjut-dest:hover { background: #2d5a3d; }
+
+/* ===================== PAGE 3 ===================== */
+.p3-header { background: #3f6f4f; color: #fff; padding: 18px 20px 22px; border-radius: 0 0 30px 30px; flex-shrink: 0; position: relative; }
+.p3-header-top { display: flex; align-items: center; margin-bottom: 20px; }
+.p3-header-top .back-btn { font-size: 36px; margin-right: 10px; }
+.p3-header h2 { font-size: 20px; font-weight: 800; position: relative; left: 70%; transform: translateX(-50%); text-align: center;}
+.p3-header p { font-size: 12px; opacity: 0.85; margin-top: 3px; position: relative; left: 70%; transform: translateX(-50%); text-align: center; }
+.p3-info-row { display: flex; gap: 10px; margin-top: 12px; }
+.p3-badge { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 600; }
+.p3-container { flex: 1; overflow-y: auto; padding: 14px; background: #f5f5f5; }
+.day-block { margin-bottom: 18px; }
+.day-label { font-size: 14px; font-weight: 800; color: #1a1a1a; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+.day-label::after { content: ''; flex: 1; height: 1px; background: #ddd; }
+.day-sub { font-size: 10px; font-weight: 500; color: #888; margin-bottom: 10px; margin-top: -6px; }
+.itin-item { display: flex; gap: 0; margin-bottom: 10px; position: relative; }
+.itin-timeline { display: flex; flex-direction: column; align-items: center; width: 36px; flex-shrink: 0; }
+.itin-dot { width: 10px; height: 10px; border-radius: 50%; background: #3B6E50; margin-top: 10px; flex-shrink: 0; border: 2px solid #fff; box-shadow: 0 0 0 2px #3B6E50; z-index: 1; }
+.itin-line { width: 2px; flex: 1; background: #c5dece; margin: 2px 0; min-height: 20px; }
+.itin-card { flex: 1; background: #fff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; display: flex; }
+.itin-card-img { width: 75px; flex-shrink: 0; }
+.itin-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.itin-card-body { flex: 1; padding: 8px 10px; }
+.itin-time { font-size: 9px; font-weight: 700; color: #3B6E50; background: #e8f5ee; border-radius: 4px; padding: 2px 6px; display: inline-block; margin-bottom: 4px; }
+.itin-name { font-size: 11px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+.itin-loc { font-size: 9px; color: #777; margin-bottom: 3px; }
+.itin-act { font-size: 9px; color: #555; }
+.itin-type-badge { font-size: 8px; background: #f0f7f2; color: #3B6E50; border-radius: 4px; padding: 2px 5px; display: inline-block; margin-bottom: 4px; font-weight: 600; text-transform: capitalize; }
+.travel-note { display: flex; align-items: center; gap: 8px; padding: 4px 8px; margin: -4px 0 4px 36px; font-size: 9px; color: #888; font-style: italic; }
+.summary-card { background: #fff; border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); }
+.summary-title { font-size: 12px; font-weight: 700; color: #3B6E50; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.summary-row { display: flex; justify-content: space-between; font-size: 11px; color: #555; padding: 4px 0; border-bottom: 1px solid #f0f0f0; }
+.summary-row:last-child { border-bottom: none; }
+.summary-row span:last-child { font-weight: 600; color: #1a1a1a; }
+.tips-card { background: linear-gradient(135deg, #e8f5ee, #f5fbf7); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid #c5dece; }
+.tips-title { font-size: 12px; font-weight: 700; color: #3B6E50; margin-bottom: 8px; }
+.tips-item { font-size: 10px; color: #444; line-height: 1.7; }
+.empty-state { text-align: center; padding: 60px 20px; color: #aaa; }
+.empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+.empty-state p { font-size: 13px; line-height: 1.6; }
+.action-row { display: flex; gap: 10px; padding: 0 0 20px; }
+.btn-share { flex: 1; border-radius: 10px; padding: 13px; font-size: 13px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: all 0.18s; }
+.btn-share-outline { background: #fff; color: #3B6E50; border: 2px solid #3B6E50; }
+.btn-share-outline:hover { background: #e8f5ee; }
+.btn-share-fill { background: #3B6E50; color: #fff; border: none; }
+.btn-share-fill:hover { background: #2d5a3d; }
+.loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; gap: 16px; }
+.loading-spinner { width: 40px; height: 40px; border: 3px solid #e8f5ee; border-top-color: #3B6E50; border-radius: 50%; animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: #3B6E50; font-weight: 600; }
+
+/* ===================== FOOTER ===================== */
+.footer { background: #FFFBE5; padding: 18px 14px 12px; border-top: 1px solid rgba(0,0,0,.08); }
+.footer-top { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 14px; }
+.footer-desc { font-size: .7rem; color: #555; line-height: 1.55; margin: 0; }
+.footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.fcol-title { font-size: .7rem; font-weight: 700; color: #1a1a1a; margin-bottom: 6px; }
+.fcol-item { font-size: .67rem; color: #555; margin-bottom: 3px; line-height: 1.4; }
+.fcol-item a { color: #555; text-decoration: none; }
+.social-row { display: flex; gap: 6px; margin-top: 6px; }
+.soc-btn { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.soc-ig { background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); }
+.soc-wa { background: #25d366; }
+.footer-copy { border-top: 1px solid rgba(0,0,0,.09); padding-top: 9px; font-size: .6rem; color: #999; text-align: center; line-height: 1.8; }
+.heart { color: #e53935; }
+
+/* ===================== PAGE PEMBAYARAN ===================== */
+#page-bayar { background: #fff; min-height: 844px; }
+.bayar-topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid #eeeeee; background: #fff; flex-shrink: 0; }
+.bayar-topbar-title { font-size: 20px; font-weight: 800; color: #1a1a1a; }
+.bayar-bm-icon { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+.bayar-bm-icon svg { width: 22px; height: 22px; }
+.bayar-hero { position: relative; width: 100%; height: 110px; overflow: hidden; }
+.bayar-hero img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.75); }
+.bayar-thankyou { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255,251,229,0.93); padding: 8px 16px 10px; text-align: center; }
+.bayar-thankyou p { font-size: 13px; font-weight: 600; color: #1a1a1a; line-height: 1.4; }
+.bayar-thankyou span { font-size: 11px; color: #555; font-weight: 400; }
+.bayar-itin-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px 10px; border-bottom: 1px solid #f0f0f0; }
+.bayar-itin-thumb { width: 56px; height: 44px; border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+.bayar-itin-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bayar-itin-info { flex: 1; }
+.bayar-itin-days { display: flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: #1a1a1a; margin-bottom: 3px; }
+.bayar-itin-days svg { width: 14px; height: 14px; fill: none; stroke: #1a1a1a; stroke-width: 2; }
+.bayar-itin-route { font-size: 11px; color: #666; }
+.bayar-method-section { padding: 14px 16px 0; }
+.bayar-method-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid #eeeeee; cursor: pointer; position: relative; }
+.bayar-method-icon { width: 36px; height: 36px; border-radius: 8px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.bayar-method-icon svg { width: 20px; height: 20px; }
+.bayar-method-text { flex: 1; }
+.bayar-method-name { font-size: 13px; font-weight: 700; color: #1a1a1a; }
+.bayar-method-sub { font-size: 11px; color: #888; margin-top: 1px; }
+.bayar-method-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cccccc; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.bayar-method-check.checked { background: #1a1a1a; border-color: #1a1a1a; }
+.bayar-method-check.checked-blue { background: #1565C0; border-color: #1565C0; }
+.bayar-method-check svg { width: 13px; height: 13px; }
+.bayar-suboptions { display: none; background: #fafafa; border-radius: 10px; margin: 4px 0 10px; overflow: hidden; border: 1px solid #eeeeee; }
+.bayar-suboptions.open { display: block; }
+.bayar-subopt-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+.bayar-subopt-row:last-child { border-bottom: none; }
+.bayar-subopt-row:hover { background: #f0f7f2; }
+.bayar-subopt-row.selected { background: #e8f5ee; }
+.bayar-subopt-logo { width: 48px; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: 800; flex-shrink: 0; overflow: hidden; }
+.bayar-subopt-logo img { width: 100%; height: 100%; object-fit: contain; }
+.bayar-subopt-name { flex: 1; font-size: 12px; font-weight: 600; color: #1a1a1a; }
+.bayar-subopt-check { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #cccccc; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s; }
+.bayar-subopt-check.active { background: #3B6E50; border-color: #3B6E50; }
+.bayar-subopt-check.active::after { content: ''; display: block; width: 6px; height: 9px; border: 2px solid #fff; border-top: none; border-left: none; transform: rotate(45deg) translate(-1px, -1px); }
+.bayar-divider { border: none; border-top: 1px solid #eeeeee; margin: 4px 0; }
+.bayar-cost-section { padding: 14px 16px 0; }
+.bayar-cost-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.bayar-cost-label { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+.bayar-cost-value { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+.bayar-progress { width: 100%; height: 5px; background: #eeeeee; border-radius: 3px; margin-bottom: 14px; overflow: hidden; }
+.bayar-progress-fill { height: 100%; width: 60%; background: linear-gradient(90deg, #c8e6c9, #3B6E50); border-radius: 3px; }
+.bayar-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.bayar-total-label { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+.bayar-total-value { font-size: 16px; font-weight: 800; color: #1a1a1a; }
+.bayar-btn { display: block; width: calc(100% - 32px); margin: 0 16px 20px; background: #3B6E50; color: #fff; border: none; border-radius: 10px; padding: 17px; font-size: 16px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; text-align: center; transition: background 0.18s; }
+.bayar-btn:hover { background: #2d5a3d; }
+
+/* ===================== PAGE INSTRUKSI ===================== */
+#page-instruksi { background: #fff; min-height: 844px; }
+.instruksi-topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 14px; border-bottom: 1px solid #eeeeee; background: #fff; flex-shrink: 0; }
+.instruksi-topbar-title { font-size: 20px; font-weight: 800; color: #1a1a1a; }
+.instruksi-hero { position: relative; width: 100%; height: 110px; overflow: hidden; }
+.instruksi-hero img { width: 100%; height: 100%; object-fit: cover; display: block; filter: brightness(0.75); }
+.instruksi-thankyou { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(255,251,229,0.93); padding: 8px 16px 10px; text-align: center; }
+.instruksi-thankyou p { font-size: 13px; font-weight: 600; color: #1a1a1a; }
+.instruksi-thankyou span { font-size: 11px; color: #555; }
+.instruksi-body { flex: 1; overflow-y: auto; padding: 16px; }
+.instruksi-total-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.instruksi-total-label { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+.instruksi-total-val { font-size: 16px; font-weight: 800; color: #1a1a1a; }
+.instruksi-bank-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.instruksi-bank-logo { height: 28px; padding: 0 10px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; flex-shrink: 0; }
+.instruksi-bank-name { font-size: 14px; font-weight: 700; color: #1a1a1a; flex: 1; }
+.instruksi-timer { font-size: 11px; color: #888; font-weight: 500; }
+.instruksi-norek-label { font-size: 13px; color: #1a1a1a; margin-bottom: 4px; font-weight: 500; }
+.instruksi-norek-val { font-size: 26px; font-weight: 800; color: #1a1a1a; letter-spacing: 1px; margin-bottom: 6px; }
+.instruksi-norek-note { font-size: 11px; color: #888; margin-bottom: 14px; line-height: 1.5; }
+.instruksi-info { font-size: 12px; color: #1a1a1a; margin-bottom: 8px; line-height: 1.6; }
+.instruksi-guide-title { font-size: 13px; font-weight: 700; color: #1a1a1a; margin: 14px 0 8px; }
+.instruksi-guide-ol { padding-left: 18px; font-size: 12px; color: #333; line-height: 1.8; }
+.instruksi-guide-ol li { margin-bottom: 4px; }
+.instruksi-guide-ol li strong { color: #1a1a1a; }
+.instruksi-ok-btn { display: block; width: 100%; background: #3B6E50; color: #fff; border: none; border-radius: 10px; padding: 16px; font-size: 15px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; margin-top: 24px; text-align: center; transition: background 0.18s; }
+.instruksi-ok-btn:hover { background: #2d5a3d; }
+
+/* ===================== LOADING OVERLAY ===================== */
+.proses-overlay { position: fixed; inset: 0; z-index: 9999; background: rgba(10,10,10,.72); display: none; align-items: center; justify-content: center; }
+.proses-overlay.show { display: flex; }
+.proses-box { background: #3B6E50; border-radius: 20px; width: 160px; height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+.proses-dots { display: grid; grid-template-columns: repeat(4,10px); gap: 5px; }
+.proses-dots span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.3); animation: dotPulse 1.3s ease-in-out infinite; }
+.proses-dots span:nth-child(1){animation-delay:0s} .proses-dots span:nth-child(2){animation-delay:.15s}
+.proses-dots span:nth-child(3){animation-delay:.3s} .proses-dots span:nth-child(4){animation-delay:.45s}
+.proses-dots span:nth-child(5){animation-delay:.6s} .proses-dots span:nth-child(6){animation-delay:.75s}
+.proses-dots span:nth-child(7){animation-delay:.9s} .proses-dots span:nth-child(8){animation-delay:1.05s}
+@keyframes dotPulse { 0%,80%,100%{ background: rgba(255,255,255,.3) } 40%{ background: rgba(255,255,255,1) } }
+.proses-label { text-align: center; color: #fff; }
+.proses-label small { font-size: 11px; display: block; opacity: .85; margin-bottom: 2px; }
+.proses-label strong { font-size: 14px; font-weight: 800; display: block; }
+#instruksi-countdown { display: inline; }
+
+/* ===================== ITINERARY BAR ===================== */
+#page-itin.active { background: #f5f5f5; display: flex; flex-direction: column; min-height: 844px; }
+.itin-page-header { background: #3B6E50; padding: 18px 16px 24px; border-radius: 0 0 30px 30px; display: flex; align-items: center; justify-content: space-between; position: relative; flex-shrink: 0; }
+.itin-page-back { font-size: 32px; color: #fff; cursor: pointer; line-height: 1; padding: 0 4px; font-weight: 300; flex-shrink: 0; }
+.itin-page-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 18px; font-weight: 700; color: #fff; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+.itin-page-title svg { width: 20px; height: 20px; fill: white; }
+.itin-page-bm { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0; pointer-events: none; }
+.itin-page-meta { padding: 10px 16px 8px; background: #e8f5e9; font-size: 11px; color: #2d5a3d; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,.08); flex-shrink: 0; }
+.itin-page-body { flex: 1; overflow-y: auto; padding: 12px 12px 0; background: #f5f5f5; }
+.itin-page-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 300px; gap: 14px; padding: 40px 20px; text-align: center; }
+.itin-page-empty svg { width: 60px; height: 60px; opacity: .18; fill: #555; }
+.itin-page-empty p { font-size: 13px; color: #aaa; line-height: 1.6; }
+.itin-pg-card { display: flex; gap: 10px; margin-bottom: 12px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 8px rgba(0,0,0,.08); animation: fadeInUp .25s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.itin-pg-img-col { width: 110px; flex-shrink: 0; display: flex; flex-direction: column; overflow: hidden; }
+.itin-pg-img-col img { width: 100%; height: 85px; object-fit: cover; display: block; }
+.itin-pg-img-label { padding: 5px 8px; flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.itin-pg-img-label .ipl-name { font-size: 10px; font-weight: 700; color: #1a1a1a; line-height: 1.3; }
+.itin-pg-img-label .ipl-cat { font-size: 9px; color: #888; }
+.itin-pg-info-col { flex: 1; padding: 10px 10px 10px 0; display: flex; flex-direction: column; justify-content: space-between; min-width: 0; position: relative; }
+.itin-pg-num { position: absolute; top: 8px; right: 8px; width: 22px; height: 22px; border-radius: 50%; background: #3B6E50; color: #fff; font-size: 10px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.itin-pg-info-col h3 { font-size: 12px; font-weight: 700; color: #1a1a1a; line-height: 1.35; margin-bottom: 3px; padding-right: 28px; }
+.itin-pg-info-col p { font-size: 9px; color: #555; line-height: 1.4; margin-bottom: 2px; }
+.itin-pg-actions { display: flex; gap: 6px; margin-top: 8px; }
+.btn-ditambahkan { flex: 1; padding: 7px 6px; background: #e8f5e9; color: #3B6E50; border: 1.5px solid #3B6E50; border-radius: 6px; font-size: 9.5px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: default; text-align: center; }
+.btn-itin-del { width: 30px; height: 30px; border-radius: 6px; background: #ffebee; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background .18s; font-size: 14px; color: #c62828; }
+.btn-itin-del:hover { background: #ffcdd2; }
+.itin-page-foot { padding: 12px 14px 14px; border-top: 1px solid rgba(0,0,0,.08); background: #fff; flex-shrink: 0; display: flex; gap: 8px; }
+.btn-itin-page-clear { flex: 1; padding: 11px; background: #fff; color: #c62828; border: 1.5px solid #c62828; border-radius: 9px; font-size: 12px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: background .18s, color .18s; }
+.btn-itin-page-clear:hover { background: #c62828; color: #fff; }
+.btn-itin-page-save { flex: 2; padding: 12px; background: #3B6E50; color: #fff; border: none; border-radius: 9px; font-size: 13px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; transition: background .18s; }
+.btn-itin-page-save:hover { background: #2d5a3d; }
+
+/* ===================== PAGE ITINERARY KAMU ===================== */
+#page-itinkamu.active { background: #fff; display: flex; flex-direction: column; min-height: 844px; }
+.itinkamu-header { background: #3B6E50; padding: 0 16px; height: 62px; display: flex; align-items: center; justify-content: space-between; position: relative; flex-shrink: 0; }
+.itinkamu-back { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; font-size: 26px; font-weight: 300; }
+.itinkamu-title { position: absolute; left: 50%; transform: translateX(-50%); font-size: 17px; font-weight: 700; color: #fff; white-space: nowrap; }
+.itinkamu-bm { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; }
+.itinkamu-bm svg { width: 22px; height: 22px; fill: none; stroke: rgba(255,255,255,.85); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.itinkamu-body { flex: 1; overflow-y: auto; padding: 22px 16px 0; }
+.itinkamu-main-title { font-size: 22px; font-weight: 800; color: #1a1a1a; text-align: center; margin-bottom: 18px; letter-spacing: -.02em; }
+.itinkamu-chips { display: flex; gap: 8px; justify-content: center; margin-bottom: 16px; flex-wrap: wrap; }
+.ik-chip { border: 1.5px solid #ccc; border-radius: 8px; padding: 7px 16px; font-size: 11px; font-weight: 600; color: #1a1a1a; background: #fff; cursor: pointer; font-family: 'Poppins', sans-serif; transition: all .18s; white-space: nowrap; }
+.ik-chip:hover, .ik-chip.active { border-color: #3B6E50; background: #e8f5e9; color: #2d5a3d; }
+
+/* ── TOMBOL CETAK UTAMA ── */
+.btn-cetak-main { width: 100%; padding: 14px; background: #3B6E50; color: #fff; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; margin-bottom: 10px; transition: background .18s; letter-spacing: .01em; }
+.btn-cetak-main:hover { background: #2d5a3d; }
+
+/* ── TOMBOL KEMBALI KE HOME (BARU) ── */
+.btn-kembali-home { width: 100%; padding: 12px; background: #fff; color: #3B6E50; border: 1.5px solid #3B6E50; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: 'Poppins', sans-serif; cursor: pointer; margin-bottom: 20px; transition: all .18s; letter-spacing: .01em; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-kembali-home:hover { background: #e8f5e9; border-color: #2d5a3d; color: #2d5a3d; }
+
+.ik-preview-card { border: 1.5px solid #e0e0e0; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.ik-preview-inner { padding: 14px; filter: blur(1.5px); user-select: none; pointer-events: none; }
+.ik-preview-cost { font-size: 10px; color: #888; text-align: right; margin-bottom: 10px; font-weight: 600; }
+.ik-preview-day-title { font-size: 10px; font-weight: 800; color: #1a1a1a; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; margin-top: 10px; display: flex; align-items: center; gap: 6px; }
+.ik-preview-day-title::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
+.ik-preview-item { font-size: 9.5px; color: #444; padding: 3px 0 3px 10px; border-left: 2.5px solid #3B6E50; margin-bottom: 3px; line-height: 1.4; }
+.ik-preview-divider { border: none; border-top: 1px dashed #ddd; margin: 10px 0; }
+
+/* ===================== QRIS ===================== */
+.qris-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 14px; padding: 16px; margin: 14px 0; text-align: center; }
+.qris-box-title { font-size: 12px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+.qris-box-sub { font-size: 10px; color: #888; margin-bottom: 12px; line-height: 1.5; }
+.qris-canvas-wrap { display: inline-block; padding: 10px; background: #fff; border: 2px solid #3B6E50; border-radius: 10px; margin-bottom: 8px; }
+.qris-canvas-wrap canvas, .qris-canvas-wrap img { display: block; width: 140px !important; height: 140px !important; }
+.qris-amount { font-size: 16px; font-weight: 800; color: #1a1a1a; margin: 4px 0 2px; }
+.qris-note { font-size: 9px; color: #888; }
+.qris-logos { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 10px; }
+.qris-logo-pill { background: #f5f5f5; border-radius: 20px; padding: 3px 10px; font-size: 9px; font-weight: 700; color: #444; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="proses-overlay" id="prosesOverlay">
+    <div class="proses-box">
+      <div class="proses-dots">
+        <span></span><span></span><span></span><span></span>
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <div class="proses-label">
+        <small>Sebentar lagi</small>
+        <strong>Sedang Di Proses</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE 1 -->
+  <div id="page1" class="page active">
+    <nav class="navbar">
+      <div class="logo-circle">
+        <img src="images/Logo LontaraTrip (potong).png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+        <span class="logo-placeholder" style="display:none">L</span>
+      </div>
+      <span class="nav-brand">LontaraTrip</span>
+    </nav>
+    <div class="main">
+      <div class="page-title">Smart Itinerary Sulsel</div>
+      <div class="page-sub">Rencanakan Perjalananmu dalam 1 menit!</div>
+      <button class="btn-buat" onclick="showPage('page-dest'); showDest('pegunungan')">Buat Itinerary</button>
+      <div class="cat-grid">
+        <div class="cat-card" onclick="showDest('pegunungan')">
+          <div class="mosaic">
+            <img src="images/malino.jpg" onerror="this.src='https://images.unsplash.com/photo-1448375240586-882707db888b?w=200&fit=crop'"/>
+            <img src="images/latimojong.jpg" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&fit=crop'"/>
+            <img src="images/lembah ramma.jpg" onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&fit=crop'"/>
+            <img src="images/negeri diatas awan.jpg" onerror="this.src='https://images.unsplash.com/photo-1434394354979-a235cd36269d?w=200&fit=crop'"/>
+          </div>
+          <div class="cat-label">Pegunungan</div>
+        </div>
+        <div class="cat-card" onclick="showDest('pantai')">
+          <div class="mosaic">
+            <img src="images/tanjung bira.jpg" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&fit=crop'"/>
+            <img src="images/apparalang.jpg" onerror="this.src='https://images.unsplash.com/photo-1519046904884-53103b34b206?w=200&fit=crop'"/>
+            <img src="images/losari.jpg" onerror="this.src='https://images.unsplash.com/photo-1471922694854-ff1b63b20054?w=200&fit=crop'"/>
+            <img src="images/pantai baraa.jpg" onerror="this.src='https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=200&fit=crop'"/>
+          </div>
+          <div class="cat-label">Pantai</div>
+        </div>
+        <div class="cat-card" onclick="showDest('kuliner')">
+          <div class="mosaic">
+            <img src="images/pallubasa.jpeg" onerror="this.src='https://images.unsplash.com/photo-1603360946369-dc9bb6258143?w=200&fit=crop'"/>
+            <img src="images/konro.jpg" onerror="this.src='https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&fit=crop'"/>
+            <img src="images/coto.jpg" onerror="this.src='https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=200&fit=crop'"/>
+            <img src="images/kapurung.jpg" onerror="this.src='https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200&fit=crop'"/>
+          </div>
+          <div class="cat-label">Kuliner</div>
+        </div>
+        <div class="cat-card" onclick="showDest('museum')">
+          <div class="mosaic">
+            <img src="images/benteng rotterdam.jpg" onerror="this.src='https://images.unsplash.com/photo-1520531158340-44015069e78e?w=200&fit=crop'"/>
+            <img src="images/monumen mandala.png" onerror="this.src='https://images.unsplash.com/photo-1533105079780-92b9be482077?w=200&fit=crop'"/>
+            <img src="images/museum kota makassar.jpg" onerror="this.src='https://images.unsplash.com/photo-1554907984-15263bfd63bd?w=200&fit=crop'"/>
+            <img src="images/Museum Buntu Kalando.jpg" onerror="this.src='https://images.unsplash.com/photo-1566127444979-b3d2b654e3d7?w=200&fit=crop'"/>
+          </div>
+          <div class="cat-label">Museum</div>
+        </div>
+      </div>
+      <button class="btn-lanjut" onclick="showPage('page2')">Lanjut</button>
+    </div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div id="page2" class="page">
+    <nav class="navbar">
+      <div class="logo-circle">
+        <img src="images/Logo LontaraTrip (potong).png" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/>
+        <span class="logo-placeholder" style="display:none">L</span>
+      </div>
+      <span class="nav-brand">LontaraTrip</span>
+    </nav>
+    <div class="p2-main">
+      <div class="p2-title">Langkah 2 dari 3</div>
+      <div class="p2-sub">Tentukan Durasi Liburanmu!</div>
+      <div class="hari-card" onclick="selectHari(this, 3)">
+        <img src="images/3hari.jpg" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&fit=crop'"/>
+        <div class="hari-card-label">3 Hari</div>
+      </div>
+      <div class="hari-card" onclick="selectHari(this, 5)">
+        <img src="images/5hari.jpg" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&fit=crop'"/>
+        <div class="hari-card-label">5 Hari</div>
+      </div>
+      <div class="hari-card" onclick="selectHari(this, 7)">
+        <img src="images/7hari.jpg" onerror="this.src='https://images.unsplash.com/photo-1471922694854-ff1b63b20054?w=600&fit=crop'"/>
+        <div class="hari-card-label">7 Hari</div>
+      </div>
+      <button class="btn-lanjut" style="margin-top:12px" onclick="goToPage3()">Lanjut →</button>
+    </div>
+  </div>
+
+  <!-- PAGE DESTINASI -->
+  <div id="page-dest" class="page">
+    <div class="dest-header">
+      <div class="back-btn" onclick="showPage('page1')">&#8249;</div>
+      <h2>Destinasi</h2>
+      <div class="bm-wrap" onclick="openItinBar()" title="Lihat Itinerary">
+        <div class="bookmark"></div>
+        <span class="bm-badge" id="bmBadge">0</span>
+      </div>
+    </div>
+    <div class="tabs">
+      <span id="tab-pegunungan" onclick="showDest('pegunungan')">Pegunungan</span>
+      <span id="tab-pantai" onclick="showDest('pantai')">Pantai</span>
+      <span id="tab-kuliner" onclick="showDest('kuliner')">Kuliner</span>
+      <span id="tab-museum" onclick="showDest('museum')">Museum</span>
+    </div>
+    <div class="selected-count-bar" id="selected-bar">
+      🗺️ Destinasi dipilih: <span id="selected-count">0</span> tempat &nbsp;|&nbsp; Pilih lalu tekan Lanjut
+    </div>
+    <div class="dest-container" id="dest-content"></div>
+    <button class="btn-lanjut-dest" id="btn-lanjut-dest" onclick="showPage('page2')">Lanjut ke Pilih Hari →</button>
+  </div>
+
+  <!-- PAGE 3 -->
+  <div id="page3" class="page">
+    <div class="p3-header">
+      <div class="p3-header-top">
+        <div class="back-btn" onclick="showPage('page2')">&#8249;</div>
+        <div>
+          <h2>Itinerary Kamu 🗺️</h2>
+          <p id="p3-subtitle">Smart Itinerary Sulawesi Selatan</p>
+        </div>
+      </div>
+      <div class="p3-info-row">
+        <div class="p3-badge" id="p3-badge-hari">⏱ 3 Hari</div>
+        <div class="p3-badge" id="p3-badge-dest">📍 0 Destinasi</div>
+        <div class="p3-badge">✨ Smart Route</div>
+      </div>
+    </div>
+    <div class="p3-container" id="p3-content">
+      <div class="loading-state">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Menyusun itinerary terbaik...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PAGE PEMBAYARAN -->
+  <div id="page-bayar" class="page">
+    <div class="bayar-topbar">
+      <div class="bayar-topbar-title">Pembayaran</div>
+      <div class="bayar-bm-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+    </div>
+    <div class="bayar-hero">
+      <img src="images/malino.jpg" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&fit=crop'" alt="hero"/>
+      <div class="bayar-thankyou"><p>Terima Kasih!</p><span>Kamu akan membuka Itinerary Trip</span></div>
+    </div>
+    <div class="bayar-itin-row">
+      <div class="bayar-itin-thumb"><img src="images/malino.jpg" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&fit=crop'" alt="thumb"/></div>
+      <div class="bayar-itin-info">
+        <div class="bayar-itin-days"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span id="bayar-hari-label">3 Hari</span></div>
+        <div class="bayar-itin-route" id="bayar-route-label">Makassar–Maros–Toraja–Malino</div>
+      </div>
+    </div>
+    <div class="bayar-method-section">
+      <div class="bayar-method-row" onclick="toggleMethodSection('wallet')">
+        <div class="bayar-method-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+        <div class="bayar-method-text"><div class="bayar-method-name">Wallet</div><div class="bayar-method-sub" id="wallet-sub-label">GoPay, QRIS, DANA</div></div>
+        <div class="bayar-method-check" id="wallet-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      </div>
+      <div class="bayar-suboptions" id="wallet-suboptions">
+        <div class="bayar-subopt-row" onclick="selectSubOption('wallet','gopay',this)"><div class="bayar-subopt-logo"><img src="images/Gopay.png" onerror="this.parentElement.textContent='GoPay'" alt="GoPay"></div><div class="bayar-subopt-name">GoPay</div><div class="bayar-subopt-check" id="subcheck-gopay"></div></div>
+        <div class="bayar-subopt-row" onclick="selectSubOption('wallet','qris',this)"><div class="bayar-subopt-logo"><img src="images/QRIS.png" onerror="this.parentElement.textContent='QRIS'" alt="QRIS"></div><div class="bayar-subopt-name">QRIS</div><div class="bayar-subopt-check" id="subcheck-qris"></div></div>
+        <div class="bayar-subopt-row" onclick="selectSubOption('wallet','dana',this)"><div class="bayar-subopt-logo"><img src="images/DANA.jpg" onerror="this.parentElement.textContent='DANA'" alt="DANA"></div><div class="bayar-subopt-name">DANA</div><div class="bayar-subopt-check" id="subcheck-dana"></div></div>
+      </div>
+      <div class="bayar-method-row" onclick="toggleMethodSection('va')">
+        <div class="bayar-method-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M3 9l9-6 9 6"/><line x1="9" y1="21" x2="9" y2="9"/><line x1="15" y1="21" x2="15" y2="9"/></svg></div>
+        <div class="bayar-method-text"><div class="bayar-method-name">Virtual Account</div><div class="bayar-method-sub" id="va-sub-label">BNI, BRI, BCA, MANDIRI</div></div>
+        <div class="bayar-method-check" id="va-check"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+      </div>
+      <div class="bayar-suboptions" id="va-suboptions">
+        <div class="bayar-subopt-row" onclick="selectSubOption('va','bni',this)"><div class="bayar-subopt-logo"><img src="images/BNI.png" onerror="this.parentElement.textContent='BNI'" alt="BNI"></div><div class="bayar-subopt-name">Bank BNI</div><div class="bayar-subopt-check" id="subcheck-bni"></div></div>
+        <div class="bayar-subopt-row" onclick="selectSubOption('va','bri',this)"><div class="bayar-subopt-logo"><img src="images/BRI.png" onerror="this.parentElement.textContent='BRI'" alt="BRI"></div><div class="bayar-subopt-name">Bank BRI</div><div class="bayar-subopt-check" id="subcheck-bri"></div></div>
+        <div class="bayar-subopt-row" onclick="selectSubOption('va','bca',this)"><div class="bayar-subopt-logo"><img src="images/BCA.png" onerror="this.parentElement.textContent='BCA'" alt="BCA"></div><div class="bayar-subopt-name">Bank BCA</div><div class="bayar-subopt-check" id="subcheck-bca"></div></div>
+        <div class="bayar-subopt-row" onclick="selectSubOption('va','mandiri',this)"><div class="bayar-subopt-logo"><img src="images/MANDIRI.png" onerror="this.parentElement.textContent='Mandiri'" alt="Mandiri"></div><div class="bayar-subopt-name">Bank Mandiri</div><div class="bayar-subopt-check" id="subcheck-mandiri"></div></div>
+      </div>
+    </div>
+    <hr class="bayar-divider" style="margin: 8px 16px;"/>
+    <div class="bayar-cost-section">
+      <div class="bayar-cost-row"><span class="bayar-cost-label">Biaya Layanan</span><span class="bayar-cost-value">Rp 30.000</span></div>
+      <div class="bayar-progress"><div class="bayar-progress-fill"></div></div>
+      <div class="bayar-total-row"><span class="bayar-total-label">Total Bayar</span><span class="bayar-total-value">Rp 30.000</span></div>
+    </div>
+    <button class="bayar-btn" onclick="doBayar()">Bayar Rp 30.000</button>
+  </div>
+
+  <!-- PAGE INSTRUKSI -->
+  <div id="page-instruksi" class="page">
+    <div class="instruksi-topbar">
+      <div class="instruksi-topbar-title">Pembayaran</div>
+      <div class="bayar-bm-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></div>
+    </div>
+    <div class="instruksi-hero">
+      <img src="images/malino.jpg" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&fit=crop'" alt="hero"/>
+      <div class="instruksi-thankyou"><p>Terima Kasih!</p><span>Kamu akan membuka Itinerary Trip</span></div>
+    </div>
+    <div class="instruksi-body" id="instruksi-body"></div>
+  </div>
+
+  <!-- PAGE ITINERARY BAR -->
+  <div id="page-itin" class="page">
+    <div class="itin-page-header">
+      <div class="itin-page-back" onclick="goBackFromItin()">‹</div>
+      <div class="itin-page-title">
+        <svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z"/></svg>
+        Itinerary Bar
+      </div>
+      <div class="itin-page-bm"></div>
+    </div>
+    <div class="itin-page-meta" id="itinPageMeta">Belum ada destinasi dipilih</div>
+    <div class="itin-page-body" id="itinPageBody">
+      <div class="itin-page-empty">
+        <svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z"/></svg>
+        <p>Itinerary kamu masih kosong.<br>Tambahkan destinasi favoritmu!</p>
+      </div>
+    </div>
+    <div class="itin-page-foot">
+      <button class="btn-itin-page-clear" onclick="clearAllSelected()">Kosongkan</button>
+      <button class="btn-itin-page-save" onclick="goToPage3FromItin()">Lanjut Buat Itinerary →</button>
+    </div>
+  </div>
+
+  <!-- PAGE ITINERARY KAMU (setelah bayar) -->
+  <div id="page-itinkamu" class="page">
+    <div class="itinkamu-header">
+      <div class="itinkamu-back" onclick="window.location.href='index.html'">‹</div>
+      <span class="itinkamu-title">Itinerary Kamu!</span>
+      <div class="itinkamu-bm"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg></div>
+    </div>
+    <div class="itinkamu-body">
+      <div class="itinkamu-main-title">Itinerary Kamu!</div>
+      <div class="itinkamu-chips" id="itinkamuChips"></div>
+
+      <!-- TOMBOL CETAK → langsung download PDF -->
+      <button class="btn-cetak-main" onclick="doCetakPDF()">Cetak</button>
+
+      <!-- TOMBOL KEMBALI KE HOME (BARU) -->
+      <button class="btn-kembali-home" onclick="showPage('page1')">&#8249; Kembali ke Home</button>
+
+      <div class="ik-preview-card">
+        <div class="ik-preview-inner" id="itinkamuPreview">
+          <div style="font-size:10px;color:#888;text-align:center;padding:20px;">Memuat preview...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<script>
+/* =====================================================================
+   STATE
+===================================================================== */
+let selectedDays = 3;
+let selectedDestinations = new Set();
+let currentKategori = 'pegunungan';
+let itinFromPage = 'page-dest';
+let activeMethod = null;
+let activeSubOpt = null;
+let countdownInterval = null;
+
+/* =====================================================================
+   TOAST
+===================================================================== */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* =====================================================================
+   NAVIGASI
+===================================================================== */
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function resetAll() {
+  selectedDestinations.clear();
+  selectedDays = 3;
+  activeMethod = null; activeSubOpt = null;
+  updateLanjutBtn();
+}
+
+/* =====================================================================
+   PAYMENT DATA
+===================================================================== */
+const paymentData = {
+  wallet: {
+    gopay: { name:'GoPay', noLabel:'Nomor GoPay:', noValue:'0812 3456 7890', note:'Dicek setelah pembayaran berhasil!', info1:'Bayar ke nomor GoPay di atas. Pastikan saldo GoPay kamu mencukupi.', info2:'Hanya menerima dari akun GoPay aktif.', info3:'GoPay mengenakan biaya transaksi Rp0.', guideTitle:'Petunjuk Transfer GoPay', guide:['Buka aplikasi Gojek, pilih menu <strong>GoPay</strong>.','Pilih <strong>Kirim</strong> dan masukkan nomor <strong>0812 3456 7890</strong>.','Masukkan nominal <strong>Rp 30.000</strong>, lalu pilih <strong>Bayar</strong>.','Pastikan nama penerima adalah <strong>LontaraTrip</strong>, lalu konfirmasi.'] },
+    qris:  { name:'QRIS', noLabel:'Kode QRIS:', noValue:'QR-8812-9922-1100', note:'Scan QRIS menggunakan aplikasi pembayaran apapun.', info1:'Scan kode QRIS LontaraTrip menggunakan e-wallet atau mobile banking kamu.', info2:'QRIS dapat dibayar dari semua aplikasi: GoPay, OVO, DANA, ShopeePay, dll.', info3:'Biaya transaksi QRIS: Rp0.', guideTitle:'Cara Bayar QRIS', guide:['Buka aplikasi e-wallet atau mobile banking kamu.','Pilih menu <strong>Scan QR</strong> atau <strong>Bayar dengan QRIS</strong>.','Scan kode QR LontaraTrip, pastikan nominal <strong>Rp 30.000</strong>.','Konfirmasi pembayaran dan selesai.'] },
+    dana:  { name:'DANA', noLabel:'Nomor DANA:', noValue:'0898 7654 3210', note:'Dicek setelah pembayaran berhasil!', info1:'Transfer ke nomor DANA di atas. Pastikan saldo DANA kamu mencukupi.', info2:'Hanya menerima dari akun DANA aktif.', info3:'DANA mengenakan biaya transaksi Rp0.', guideTitle:'Petunjuk Transfer DANA', guide:['Buka aplikasi <strong>DANA</strong>, pilih menu <strong>Kirim</strong>.','Masukkan nomor <strong>0898 7654 3210</strong>.','Masukkan nominal <strong>Rp 30.000</strong> lalu klik <strong>Lanjut</strong>.','Pastikan nama penerima <strong>LontaraTrip</strong>, lalu masukkan PIN dan konfirmasi.'] }
+  },
+  va: {
+    bni:     { name:'Bank BNI', noLabel:'No. Rekening:', noValue:'808 277 297 1122', note:'Dicek 10 menit setelah pembayaran berhasil!', info1:'Bayar pesanan ke Virtual Account di atas sebelum membuat pesanan kembali.', info2:'Hanya menerima di Bank BNI.', info3:'Bank BNI mengenakan biaya transaksi Rp2.500.', guideTitle:'Petunjuk Transfer mBanking BNI', guide:['Login ke BNI Mobile Banking. Pilih <strong>Transfer</strong> → <strong>Virtual Account Billing</strong>.','Masukkan nomor VA <strong>808 277 297 1122</strong>, kemudian pilih Lanjut.','Periksa: Merchant <strong>LontaraTrip</strong>, Total tagihan sudah benar.','Masukkan PIN BNI dan pilih <strong>OK</strong>.'] },
+    bri:     { name:'Bank BRI', noLabel:'No. Rekening:', noValue:'002 277 297 3344', note:'Dicek 10 menit setelah pembayaran berhasil!', info1:'Bayar pesanan ke Virtual Account di atas sebelum membuat pesanan kembali.', info2:'Hanya menerima di Bank BRI.', info3:'Bank BRI mengenakan biaya transaksi Rp1.500.', guideTitle:'Petunjuk Transfer BRImo', guide:['Login ke aplikasi <strong>BRImo</strong>. Pilih <strong>Transfer</strong> → <strong>Virtual Account</strong>.','Masukkan nomor VA <strong>002 277 297 3344</strong>, kemudian pilih Lanjut.','Periksa: Merchant <strong>LontaraTrip</strong>, total tagihan sudah benar.','Masukkan PIN BRI, konfirmasi dan pilih <strong>OK</strong>.'] },
+    bca:     { name:'Bank BCA', noLabel:'No. Rekening:', noValue:'777 277 297 5566', note:'Dicek 10 menit setelah pembayaran berhasil!', info1:'Bayar pesanan ke Virtual Account di atas sebelum membuat pesanan kembali.', info2:'Hanya menerima di Bank BCA.', info3:'Bank BCA mengenakan biaya transaksi Rp2.500.', guideTitle:'Petunjuk Transfer myBCA', guide:['Login ke aplikasi <strong>myBCA</strong>. Pilih <strong>Transaksi</strong> → <strong>Transfer ke BCA Virtual Account</strong>.','Masukkan nomor VA <strong>777 277 297 5566</strong>, kemudian pilih Lanjut.','Periksa: Merchant <strong>LontaraTrip</strong>, total tagihan sudah benar.','Masukkan PIN BCA, konfirmasi dan pilih <strong>OK</strong>.'] },
+    mandiri: { name:'Bank Mandiri', noLabel:'No. Rekening:', noValue:'008 277 297 2552', note:'Dicek 10 menit setelah pembayaran berhasil!', info1:'Bayar pesanan ke Virtual Account di atas sebelum membuat pesanan kembali.', info2:'Hanya menerima di Bank Mandiri.', info3:'Bank Mandiri mengenakan biaya transaksi Rp1.000.', guideTitle:'Petunjuk Transfer mBanking', guide:['Login ke mBanking-mu. Pilih <strong>Bayar</strong> → <strong>e-Commerce</strong>.','Pilih Penyedia Layanan Shopee Indonesia, masukkan VA <strong>008 277 297 2552</strong>.','Periksa: Merchant <strong>LontaraTrip</strong>, total tagihan sudah benar, username kamu Angelia.','Masukkan PIN Anda dan pilih OK.'] }
+  }
+};
+
+/* =====================================================================
+   PAYMENT LOGIC
+===================================================================== */
+function toggleMethodSection(method) {
+  const ws = document.getElementById('wallet-suboptions'), vs = document.getElementById('va-suboptions');
+  const wc = document.getElementById('wallet-check'), vc = document.getElementById('va-check');
+  if (method === 'wallet') {
+    const open = ws.classList.contains('open');
+    vs.classList.remove('open'); vc.className = 'bayar-method-check';
+    if (!open) { ws.classList.add('open'); wc.className = 'bayar-method-check checked'; activeMethod = 'wallet'; }
+    else { ws.classList.remove('open'); wc.className = 'bayar-method-check'; activeMethod = null; activeSubOpt = null; document.getElementById('wallet-sub-label').textContent = 'GoPay, QRIS, DANA'; }
+  } else {
+    const open = vs.classList.contains('open');
+    ws.classList.remove('open'); wc.className = 'bayar-method-check';
+    if (!open) { vs.classList.add('open'); vc.className = 'bayar-method-check checked'; activeMethod = 'va'; }
+    else { vs.classList.remove('open'); vc.className = 'bayar-method-check'; activeMethod = null; activeSubOpt = null; document.getElementById('va-sub-label').textContent = 'BNI, BRI, BCA, MANDIRI'; }
+  }
+}
+
+function selectSubOption(methodType, key, rowEl) {
+  activeSubOpt = key;
+  ['subcheck-gopay','subcheck-qris','subcheck-dana','subcheck-bni','subcheck-bri','subcheck-bca','subcheck-mandiri'].forEach(id => { document.getElementById(id).className = 'bayar-subopt-check'; });
+  const container = document.getElementById(methodType === 'wallet' ? 'wallet-suboptions' : 'va-suboptions');
+  container.querySelectorAll('.bayar-subopt-row').forEach(r => r.classList.remove('selected'));
+  rowEl.classList.add('selected');
+  document.getElementById('subcheck-' + key).className = 'bayar-subopt-check active';
+  const checkEl = document.getElementById(methodType === 'wallet' ? 'wallet-check' : 'va-check');
+  checkEl.className = 'bayar-method-check checked-blue';
+  const wLabels = {gopay:'GoPay',qris:'QRIS',dana:'DANA'};
+  const vLabels = {bni:'Bank BNI',bri:'Bank BRI',bca:'Bank BCA',mandiri:'Bank Mandiri'};
+  if (methodType === 'wallet') document.getElementById('wallet-sub-label').textContent = wLabels[key];
+  else document.getElementById('va-sub-label').textContent = vLabels[key];
+}
+
+function doBayar() {
+  if (!activeMethod || !activeSubOpt) { showToast('Pilih metode pembayaran terlebih dahulu!'); return; }
+  showProses(1800, () => { renderInstruksi(); showPage('page-instruksi'); });
+}
+
+function showProses(ms, cb) {
+  const el = document.getElementById('prosesOverlay');
+  el.classList.add('show');
+  setTimeout(() => { el.classList.remove('show'); if (cb) cb(); }, ms);
+}
+
+function renderInstruksi() {
+  const data = paymentData[activeMethod][activeSubOpt];
+  const body = document.getElementById('instruksi-body');
+  let totalSec = 24 * 3600 - 1;
+  if (countdownInterval) clearInterval(countdownInterval);
+  function fmtTime(s) { const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sc=s%60; return `${h} jam ${String(m).padStart(2,'0')} menit ${String(sc).padStart(2,'0')} detik`; }
+  const guideItems = data.guide.map(g => `<li>${g}</li>`).join('');
+  const isQRIS = (activeSubOpt === 'qris');
+  const qrisPayload = '000201010211264300160003301234567890520495995303360540530000062070703LT63041D0A';
+  const qrisSection = isQRIS ? `
+    <div class="qris-box">
+      <div class="qris-box-title">Scan QR Code untuk Bayar</div>
+      <div class="qris-box-sub">Gunakan aplikasi apapun yang mendukung QRIS<br>GoPay • OVO • DANA • ShopeePay • LinkAja • m-Banking</div>
+      <div class="qris-canvas-wrap" id="qr-render"></div>
+      <div class="qris-amount">Rp 30.000</div>
+      <div class="qris-note">LontaraTrip — Smart Itinerary Sulsel</div>
+      <div class="qris-logos">
+        <span class="qris-logo-pill">GoPay</span><span class="qris-logo-pill">OVO</span>
+        <span class="qris-logo-pill">DANA</span><span class="qris-logo-pill">ShopeePay</span>
+        <span class="qris-logo-pill">LinkAja</span>
+      </div>
+    </div>` : '';
+  body.innerHTML = `
+    <div class="instruksi-total-row"><span class="instruksi-total-label">Total Bayar</span><span class="instruksi-total-val">Rp 30.000</span></div>
+    <div class="instruksi-bank-row">
+      <div class="instruksi-bank-logo" style="background:#2e7d32;">${data.name.replace('Bank ','')}</div>
+      <span class="instruksi-bank-name">${data.name}</span>
+      <span class="instruksi-timer" id="instruksi-countdown">${fmtTime(totalSec)}</span>
+    </div>
+    ${qrisSection}
+    ${!isQRIS ? `<div class="instruksi-norek-label">${data.noLabel}</div>
+    <div class="instruksi-norek-val">${data.noValue}</div>
+    <div class="instruksi-norek-note">${data.note}</div>` : ''}
+    <div class="instruksi-info">${data.info1}</div>
+    <div class="instruksi-info">${data.info2}</div>
+    <div class="instruksi-info">${data.info3}</div>
+    <div class="instruksi-guide-title">${data.guideTitle}</div>
+    <ol class="instruksi-guide-ol">${guideItems}</ol>
+    <button class="instruksi-ok-btn" onclick="afterPaymentOK()">OK</button>`;
+  if (isQRIS) {
+    setTimeout(() => {
+      const el = document.getElementById('qr-render');
+      if (el && window.QRCode) { el.innerHTML = ''; new QRCode(el, { text: qrisPayload, width: 140, height: 140, colorDark: '#1a1a1a', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); }
+    }, 80);
+  }
+  countdownInterval = setInterval(() => {
+    totalSec--;
+    if (totalSec <= 0) { clearInterval(countdownInterval); return; }
+    const el = document.getElementById('instruksi-countdown');
+    if (el) el.textContent = fmtTime(totalSec);
+  }, 1000);
+}
+
+/* =====================================================================
+   HELPER: Hitung estimasi biaya
+===================================================================== */
+function parseHarga(hargaStr) {
+  if (!hargaStr) return 0;
+  const lower = hargaStr.toLowerCase();
+  if (lower.includes('gratis') || lower.includes('sukarela') || lower.includes('tidak memiliki')) return 0;
+  const matches = hargaStr.replace(/\./g, '').match(/\d+/g);
+  if (!matches) return 0;
+  return parseInt(matches[0]) || 0;
+}
+
+function hitungEstimasiBiaya(allSelected) {
+  let total = 0;
+  allSelected.forEach(d => { total += parseHarga(d.item.harga); });
+  return total;
+}
+
+/* =====================================================================
+   AFTER PAYMENT
+===================================================================== */
+function afterPaymentOK() {
+  showProses(2000, () => { renderItinKamu(); showPage('page-itinkamu'); });
+}
+
+function renderItinKamu() {
+  const chipsEl = document.getElementById('itinkamuChips');
+  const kats = new Set();
+  selectedDestinations.forEach(key => { const [kat] = key.split('::'); kats.add(kat); });
+  const katLabels = { pegunungan:'🏔 Pegunungan', pantai:'🏖 Pantai', kuliner:'🍜 Kuliner', museum:'🏛 Museum' };
+  let chipsHTML = `<div class="ik-chip active">${selectedDays} Hari</div>`;
+  kats.forEach(k => { chipsHTML += `<div class="ik-chip">${katLabels[k] || k}</div>`; });
+  chipsEl.innerHTML = chipsHTML;
+  chipsEl.querySelectorAll('.ik-chip').forEach(c => {
+    c.addEventListener('click', function() {
+      chipsEl.querySelectorAll('.ik-chip').forEach(x => x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  const allSelected = getSelectedDestItems();
+  const dayPlans = buildItinerary(allSelected, selectedDays);
+  const totalBiaya = hitungEstimasiBiaya(allSelected);
+  const estimasiStr = totalBiaya.toLocaleString('id-ID');
+  let previewHTML = `<div class="ik-preview-cost">Estimasi Biaya: Rp ${estimasiStr} / orang</div>`;
+  const catLabel = { pegunungan:'Pegunungan', pantai:'Pantai', kuliner:'Kuliner', museum:'Museum' };
+  const zoneNamesLocal = {0:"Makassar",1:"Gowa",2:"Maros & Pangkep",3:"Malino & Gowa",4:"Bulukumba",5:"Bone & Sinjai",6:"Toraja & Enrekang",7:"Wajo & Soppeng",8:"Parepare & Barru",9:"Palopo & Luwu",10:"Kepulauan Selayar"};
+  dayPlans.forEach((items, di) => {
+    if (items.length === 0) return;
+    const zone = items[0].zone || 0;
+    previewHTML += `<div class="ik-preview-day-title">HARI ${di+1} — ${zoneNamesLocal[zone] || 'Sulawesi Selatan'}</div>`;
+    items.forEach(d => { previewHTML += `<div class="ik-preview-item">• ${d.nama} <span style="color:#888">[${catLabel[d.kategori]||d.kategori}]</span></div>`; });
+    if (di < dayPlans.length - 1) previewHTML += `<div class="ik-preview-divider"></div>`;
+  });
+  document.getElementById('itinkamuPreview').innerHTML = previewHTML;
+}
+
+/* =====================================================================
+   PDF DOWNLOAD
+===================================================================== */
+async function doCetakPDF() {
+  showProses(600, async () => {
+    try { await generatePDF(); }
+    catch(e) { showToast('Gagal generate PDF, coba lagi.'); console.error(e); }
+  });
+}
+
+async function generatePDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const img = new Image();
+  img.src = 'images/Logo LontaraTrip (potong).png';
+
+  await new Promise((resolve) => {
+    img.onload = resolve;
+    img.onerror = resolve;
+  });
+
+  const logoHeight = 20;
+  const textY = 16;
+
+  try {
+    doc.addImage(img, 'PNG', 15, textY - (logoHeight / 2), 20, logoHeight);
+  } catch(e) {}
+
+  const allSelected = getSelectedDestItems();
+  const dayPlans = buildItinerary(allSelected, selectedDays);
+  const totalBiaya = hitungEstimasiBiaya(allSelected);
+  const catLabel = { pegunungan:'Pegunungan', pantai:'Pantai', kuliner:'Kuliner', museum:'Museum' };
+  const zoneNames = {
+    0:'Makassar', 1:'Gowa', 2:'Maros - Barru', 3:'Malino',
+    4:'Bulukumba', 5:'Bone', 6:'Toraja & Enrekang', 7:'Wajo & Soppeng',
+    8:'Parepare & Barru', 9:'Palopo & Luwu', 10:'Kepulauan Selayar'
+  };
+
+  const pageW = 210, pageH = 297;
+  const ml = 20, mr = 20;
+  const contentW = pageW - ml - mr;
+  let y = 0;
+
+  const GREEN  = [59, 110, 80];
+  const BLACK  = [26, 26, 26];
+  const GRAY   = [130, 130, 130];
+  const LGRAY  = [210, 210, 210];
+
+  function dashed(yy) {
+    doc.setDrawColor(...LGRAY);
+    doc.setLineDashPattern([1.2, 1.4], 0);
+    doc.line(ml, yy, pageW - mr, yy);
+    doc.setLineDashPattern([], 0);
+  }
+
+  function checkPage(needed) {
+    if (y + needed > pageH - 22) { doc.addPage(); y = 22; }
+  }
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(59, 110, 80);
+  doc.text('LONTARA TRIP', ml + 18, 16);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.setTextColor(120);
+  doc.text('Smart Itinerary Sulawesi Selatan', ml + 18, 22);
+
+  y = 28;
+
+  y += 6;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  doc.setTextColor(...BLACK);
+  doc.text('Durasi: ' + selectedDays + ' Hari', ml, y);
+  y += 5.5;
+
+  const estimasiStr = totalBiaya === 0 ? 'Gratis' : 'Rp ' + totalBiaya.toLocaleString('id-ID');
+  doc.text('Estimasi Biaya: ' + estimasiStr + ' / orang', ml, y);
+  y += 7;
+
+  dashed(y); y += 9;
+
+  dayPlans.forEach((items, di) => {
+    checkPage(16);
+
+    let areaName = 'Sulawesi Selatan';
+    if (items.length > 0) {
+      const zc = {};
+      items.forEach(d => { const z = d.zone || 0; zc[z] = (zc[z] || 0) + 1; });
+      const topZ = parseInt(Object.entries(zc).sort((a,b) => b[1]-a[1])[0][0]);
+      areaName = zoneNames[topZ] || 'Sulawesi Selatan';
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...BLACK);
+    doc.text('HARI ' + (di + 1) + ' \u2013 ' + areaName.toUpperCase(), ml, y);
+    y += 6.5;
+
+    if (items.length === 0) {
+      doc.setFont('helvetica', 'italic');
+      doc.setFontSize(8.5);
+      doc.setTextColor(...GRAY);
+      doc.text('Hari perjalanan & transit', ml + 3, y);
+      y += 5;
+    } else {
+      items.forEach(dest => {
+        checkPage(6);
+        const kat = catLabel[dest.kategori] || dest.kategori;
+        const baris = '\u2022 ' + dest.nama + ' [' + kat + ']';
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9);
+        doc.setTextColor(...BLACK);
+        const lines = doc.splitTextToSize(baris, contentW - 2);
+        lines.forEach(line => {
+          checkPage(5);
+          doc.text(line, ml, y);
+          y += 5;
+        });
+      });
+    }
+
+    y += 3;
+    dashed(y); y += 9;
+  });
+
+  checkPage(16);
+  y += 4;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(...GRAY);
+  doc.text('Terima kasih telah menggunakan LontaraTrip!', pageW / 2, y, { align: 'center' });
+  y += 5;
+  doc.text('Rencanakan perjalananmu dengan mudah & cepat.', pageW / 2, y, { align: 'center' });
+
+  doc.save('LontaraTrip_Itinerary_' + selectedDays + 'Hari.pdf');
+  showToast('PDF berhasil didownload!');
+}
+
+/* =====================================================================
+   HELPER: get all selected dest as objects
+===================================================================== */
+function getSelectedDestItems() {
+  const all = [];
+  selectedDestinations.forEach(key => {
+    const [kat, nama] = key.split('::');
+    const item = destData[kat] && destData[kat].find(d => d.nama === nama);
+    if (item) all.push({ nama: item.nama, kategori: kat, item, zone: locationZones[item.nama] !== undefined ? locationZones[item.nama] : 0 });
+  });
+  return all;
+}
+
+function goToPembayaran() {
+  activeMethod = null; activeSubOpt = null;
+  ['wallet-check','va-check'].forEach(id => { document.getElementById(id).className = 'bayar-method-check'; });
+  ['wallet-suboptions','va-suboptions'].forEach(id => { document.getElementById(id).classList.remove('open'); });
+  document.getElementById('wallet-sub-label').textContent = 'GoPay, QRIS, DANA';
+  document.getElementById('va-sub-label').textContent = 'BNI, BRI, BCA, MANDIRI';
+  ['subcheck-gopay','subcheck-qris','subcheck-dana','subcheck-bni','subcheck-bri','subcheck-bca','subcheck-mandiri'].forEach(id => { document.getElementById(id).className = 'bayar-subopt-check'; });
+  document.querySelectorAll('.bayar-subopt-row').forEach(r => r.classList.remove('selected'));
+  document.getElementById('bayar-hari-label').textContent = selectedDays + ' Hari';
+  const zones = new Set();
+  selectedDestinations.forEach(key => { const [kat, nama] = key.split('::'); const z = locationZones[nama]; if (z !== undefined) zones.add(z); });
+  const zNames = {0:'Makassar',1:'Gowa',2:'Maros',3:'Malino',4:'Bulukumba',5:'Bone',6:'Toraja',7:'Soppeng',8:'Parepare',9:'Palopo',10:'Selayar'};
+  const routeArr = [...zones].sort((a,b)=>a-b).slice(0,4).map(z=>zNames[z]||'Sulsel');
+  document.getElementById('bayar-route-label').textContent = routeArr.join('\u2013') || 'Sulawesi Selatan';
+  showPage('page-bayar');
+}
+
+/* =====================================================================
+   DEST PAGE
+===================================================================== */
+function showDest(kategori) {
+  showPage('page-dest');
+  currentKategori = kategori;
+  ['pegunungan','pantai','kuliner','museum'].forEach(t => { document.getElementById('tab-'+t).classList.remove('active'); });
+  document.getElementById('tab-'+kategori).classList.add('active');
+  renderDest(kategori);
+  updateLanjutBtn();
+}
+
+function updateLanjutBtn() {
+  const btn = document.getElementById('btn-lanjut-dest');
+  const count = selectedDestinations.size;
+  document.getElementById('selected-count').textContent = count;
+  btn.classList.toggle('visible', count > 0);
+  const badge = document.getElementById('bmBadge');
+  badge.textContent = count;
+  badge.classList.toggle('show', count > 0);
+}
+
+function toggleDestination(key, btn, cardInfoId, nama) {
+  const cardInfo = document.getElementById(cardInfoId);
+  if (selectedDestinations.has(key)) {
+    selectedDestinations.delete(key);
+    btn.textContent = 'Tambahkan ke Itinerary'; btn.classList.remove('btn-selected');
+    if (cardInfo) { cardInfo.classList.remove('selected-card'); const b = cardInfo.querySelector('.check-badge'); if (b) b.remove(); }
+    showToast(nama + ' dihapus dari Itinerary');
+  } else {
+    selectedDestinations.add(key);
+    btn.textContent = '✓ Ditambahkan'; btn.classList.add('btn-selected');
+    if (cardInfo) {
+      cardInfo.classList.add('selected-card');
+      const existing = cardInfo.querySelector('.check-badge'); if (existing) existing.remove();
+      const badge = document.createElement('div'); badge.className = 'check-badge';
+      badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+      cardInfo.appendChild(badge);
+    }
+    showToast(nama + ' ditambahkan ke Itinerary');
+  }
+  updateLanjutBtn();
+}
+
+function encodeKey(key) { return key.replace(/[^a-zA-Z0-9]/g, '_'); }
+
+function renderDest(kategori) {
+  const container = document.getElementById('dest-content');
+  const data = destData[kategori];
+  const capKat = kategori.charAt(0).toUpperCase() + kategori.slice(1);
+  let html = '';
+  data.forEach(item => {
+    const key = kategori + '::' + item.nama;
+    const isSelected = selectedDestinations.has(key);
+    const eid = 'ci-' + encodeKey(key);
+    const safeNama = item.nama.replace(/'/g, "\\'");
+    const safeKey = key.replace(/'/g, "\\'");
+    const checkBadgeHtml = isSelected ? '<div class="check-badge"><svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>' : '';
+    const ratingHtml = (item.rating && !isSelected) ? '<div class="rating">'+item.rating+'</div>' : '';
+    html += `<div class="card">
+      <div class="card-img">
+        <img src="${item.gambar}" alt="${item.nama}" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&fit=crop'"/>
+        <p><strong style="font-size:10px;color:#000">${item.nama}</strong><br><span style="font-size:10px;color:#000">${capKat}</span></p>
+      </div>
+      <div class="card-info ${isSelected ? 'selected-card' : ''}" id="${eid}">
+        ${ratingHtml}${checkBadgeHtml}
+        <h3>${item.nama}</h3>
+        <p>${item.deskripsi}</p>
+        <p>📍 ${item.lokasi}</p>
+        <p>💰 ${item.harga}</p>
+        <p>🎯 ${item.aktivitas}</p>
+        <button class="card-btn ${isSelected ? 'btn-selected' : ''}"
+          onclick="toggleDestination('${safeKey}', this, '${eid}', '${safeNama}')">
+          ${isSelected ? '✓ Ditambahkan' : 'Tambahkan ke Itinerary'}
+        </button>
+      </div>
+    </div>`;
+  });
+  html += footerHTML;
+  container.innerHTML = html;
+  container.scrollTop = 0;
+}
+
+/* =====================================================================
+   ITINERARY BAR
+===================================================================== */
+function openItinBar() {
+  itinFromPage = 'page-dest';
+  renderItinPage();
+  showPage('page-itin');
+}
+function goBackFromItin() { showPage(itinFromPage); }
+
+function renderItinPage() {
+  const body = document.getElementById('itinPageBody');
+  const meta = document.getElementById('itinPageMeta');
+  if (!body) return;
+  const count = selectedDestinations.size;
+  meta.textContent = count === 0 ? 'Belum ada destinasi dipilih' : count + ' destinasi dipilih';
+  if (count === 0) {
+    body.innerHTML = '<div class="itin-page-empty"><svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 00-2 2v16l7-3 7 3V5a2 2 0 00-2-2z"/></svg><p>Itinerary kamu masih kosong.<br>Tambahkan destinasi favoritmu!</p></div>';
+    return;
+  }
+  const catIcon = { pegunungan:'🏔️', pantai:'🏖️', kuliner:'🍜', museum:'🏛️' };
+  let i = 0;
+  body.innerHTML = [...selectedDestinations].map(key => {
+    const [kat, nama] = key.split('::');
+    i++;
+    const item = destData[kat] && destData[kat].find(d => d.nama === nama);
+    const imgSrc = item ? item.gambar : '';
+    const fbMap = {pegunungan:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&fit=crop', pantai:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&fit=crop', kuliner:'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=300&fit=crop', museum:'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=300&fit=crop'};
+    return `<div class="itin-pg-card">
+      <div class="itin-pg-img-col">
+        <img src="${imgSrc}" alt="${nama}" onerror="this.src='${fbMap[kat]||''}'"/>
+        <div class="itin-pg-img-label">
+          <span class="ipl-name">${nama}</span>
+          <span class="ipl-cat">${catIcon[kat]||'📍'} ${kat.charAt(0).toUpperCase()+kat.slice(1)}</span>
+        </div>
+      </div>
+      <div class="itin-pg-info-col">
+        <div class="itin-pg-num">${i}</div>
+        <h3>${nama}</h3>
+        <p>${item ? item.deskripsi : ''}</p>
+        <p>📍 ${item ? item.lokasi : ''}</p>
+        <p>💰 ${item ? item.harga : ''}</p>
+        <div class="itin-pg-actions">
+          <div class="btn-ditambahkan">✓ Ditambahkan</div>
+          <button class="btn-itin-del" onclick="removeFromItin('${key.replace(/'/g,"\\'")}')">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function removeFromItin(key) {
+  selectedDestinations.delete(key);
+  updateLanjutBtn(); renderItinPage(); renderDest(currentKategori);
+  showToast('Destinasi dihapus dari Itinerary');
+}
+function clearAllSelected() {
+  selectedDestinations.clear(); updateLanjutBtn(); renderItinPage(); renderDest(currentKategori);
+  showToast('Itinerary dikosongkan');
+}
+function goToPage3FromItin() {
+  if (selectedDestinations.size === 0) { showToast('Pilih dulu destinasimu!'); return; }
+  showPage('page2');
+}
+
+/* =====================================================================
+   PILIH HARI
+===================================================================== */
+function selectHari(el, days) {
+  document.querySelectorAll('.hari-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedDays = days;
+}
+
+/* =====================================================================
+   LOCATION ZONES
+===================================================================== */
+const locationZones = {
+  "Rammang-Rammang":2,"Bulu Dua":7,"Buttu Macca":6,"Negeri di Atas Awan":6,
+  "Lappa Laona":8,"Latimojong  (3.478 mdpl)":6,"Rantekombola (3.455 mdpl)":6,
+  "Balease (3.016 mdpl)":9,"Gunung Karua (2.670 mdpl)":6,"Gunung Kambuno (2.950 mdpl)":9,
+  "Gunung Sesean ( 2.100 mdpl)":6,"Gunung Nona (1.580 mdpl)":6,"Lembah Lohe (1.930 mdpl)":3,
+  "Bulu Baria (2.730 mdpl)":3,"Bulusaraung (1.353 mdpl)":2,"Hutan Pinus Malino":3,
+  "Gunung Bahong Langi (1.988 mdpl)":5,"Gunung Tondong Karambu (1.700 mdpl)":8,
+  "Gunung Kappire (1.100 mdpl)":8,"Air Terjun Takapala":3,
+  "Gunung Bawakaraeng (2.830 mdpl)":3,"Gunung Bambapuang (1.021 mdpl) ":6,
+  "Gunung Bulu Saukang (332 mdpl)":2,"Danau Tanralili":3,"Lembah Ramma":3,"Pangngalleang toppa'":1,
+  "Pantai Apparalang":4,"Tanjung Palette":5,"Taman Nasional Taka Bonerate":10,
+  "Pantai Panrang Luhu":4,"Pantai Topejawa":1,"Pantai Mattirotasi":8,"Lasonrai Beach":8,
+  "Pantai Akkarena":0,"Pantai Lemo-Lemo":4,"Pantai Indah Bosowa":0,"Pantai Biru":0,
+  "Pantai Pinang":10,"Pantai Tanjung Bira":4,"Pantai Losari":0,"Pantai Bara":4,
+  "Pantai Ujung Suso":9,"Pantai Marina":4,"Pantai Seruni":4,"Pantai Galesong":1,
+  "Pantai Tanjung Bayang":0,"Pantai Barugaya Punaga":1,"Pantai Anging Mammiri":0,
+  "Pantai Tanjung Barat Barombong":0,"Pantai Tanjung Layar Putih":0,"Pantai Laguna":8,
+  "Wisata Pantai Bintang Galesong":1,"Pantai Marumasa":4,"Sunset Quay Best View":0,
+  "Pantai Pulau Liukang Loe":4,"Pantai Pa'badilang":10,"Pulau Bulupolo":9,
+  "Pulau Kodingareng Keke":0,"Pantai Pulau Kayangan":0,"Pulau Laelae":0,
+  "Coto Nusantara":0,"Rumah Makan Kapurung ITA":9,"Konro Karebosi":0,"Palekko 27'e":7,
+  "Dapur Kue Gambung":9,"Pallubasa Serigala":0,"Jalangkote & Lumpia Lasinrang":0,
+  "Cahaya Oleh-Oleh":0,"Ati Raja":0,"Bolu Cukke \"Usaha Rahmah\"":7,"Ikan Asap Bu Taty":4,
+  "Kuliner Apang Pella Lawawoi":7,"Nennu-nennu Qirana":7,"Oleh-Oleh SumbaOpu":0,
+  "Sop Saudara Dzakwan":2,"Pisang Epe' Mandiri":0,"Mie Titi":0,"Mantao Pare":8,
+  "Oleh-Oleh Khas Selayar":10,"Kepala Ikan Mappanyuki Pallumara":0,"Futry Bakery & Cake Maros":2,
+  "Donat Kampar Galesong":1,"Otak-Otak Sunny":0,"Pisang Ijo Oleh-Oleh Makassar":0,
+  "Dangke Enrekang":6,"Gratia Tori' (Kue Khas Toraja)":6,"Putu Cangkir":0,"Sop Ubi":0,
+  "Coto Kuda":4,"Bebek Palekko":7,"Sarabba Sungai Cerekan":0,
+  "Museum Batara Guru":9,"Museum Nekara":10,"Benteng Rotterdam":0,"Museum Kupu-kupu Bantimurung":2,
+  "Museum Colliq Pujie":8,"Monumen Mandala":0,"Museum Karaeng Pattingalloang":1,
+  "Museum Ne'Gandeng":6,"Museum Daerah Maros":2,"Benteng Somba Opu":1,"Museum Buntu Kalando":6,
+  "Museum Kota Makassar":0,"Museum Pongtiku Rantepao":6,"Museum Nene' Mallomo":7,
+  "Museum Saoraja Mallangga":7,"Museum BJ Habibie":8,"Museum Landorundun":6,
+  "Museum Villa Yuliana":7,"Taman Budaya dan Museum Bumi Lasinrang":8,"Museum Balla Lompoa":1
+};
+
+function zoneTravelHours(a, b) {
+  if (a === b) return 0;
+  const dist = {'0-1':0.5,'0-2':1,'0-3':2,'0-4':4,'0-5':5,'0-6':8,'0-7':4,'0-8':3,'0-9':7,'0-10':6,'1-2':1.5,'1-3':1.5,'1-4':3.5,'1-5':5,'1-6':8,'1-7':4,'1-8':3.5,'1-9':7,'1-10':6,'2-3':3,'2-4':5,'2-5':6,'2-6':9,'2-7':5,'2-8':2,'2-9':8,'2-10':7,'3-4':5,'3-5':6,'3-6':6,'3-7':5,'3-8':5,'3-9':8,'3-10':7,'4-5':2,'4-6':6,'4-7':5,'4-8':6,'4-9':6,'4-10':4,'5-6':6,'5-7':3,'5-8':7,'5-9':5,'5-10':5,'6-7':4,'6-8':6,'6-9':3,'6-10':10,'7-8':2,'7-9':5,'7-10':8,'8-9':4,'8-10':9,'9-10':8};
+  return dist[`${Math.min(a,b)}-${Math.max(a,b)}`] || 3;
+}
+const visitDuration = { pegunungan:4, pantai:3, kuliner:1, museum:1.5 };
+
+function buildItinerary(destinations, days) {
+  const byZone = {};
+  destinations.forEach(d => {
+    const z = d.zone !== undefined ? d.zone : 0;
+    if (!byZone[z]) byZone[z] = [];
+    byZone[z].push({...d, zone: z});
+  });
+  const sortedZones = Object.keys(byZone).map(Number).sort((a,b) => zoneTravelHours(0,a) - zoneTravelHours(0,b));
+  const dayPlans = Array.from({length: days}, () => []);
+  const dayBudget = Array.from({length: days}, () => 8);
+  const lastZone = Array.from({length: days}, () => 0);
+  let dayIdx = 0;
+  sortedZones.forEach(zone => {
+    const items = byZone[zone];
+    const travel = zoneTravelHours(lastZone[dayIdx], zone);
+    if (travel > dayBudget[dayIdx] && dayIdx < days - 1) dayIdx++;
+    items.forEach(item => {
+      const dur = visitDuration[item.kategori] || 2;
+      if (dayBudget[dayIdx] >= dur) { dayPlans[dayIdx].push({...item, zone}); dayBudget[dayIdx] -= dur; lastZone[dayIdx] = zone; }
+      else if (dayIdx < days - 1) { dayIdx++; dayPlans[dayIdx].push({...item, zone}); dayBudget[dayIdx] -= dur; lastZone[dayIdx] = zone; }
+      else { dayPlans[dayIdx].push({...item, zone}); }
+    });
+  });
+  return dayPlans;
+}
+
+/* =====================================================================
+   PAGE 3
+===================================================================== */
+function goToPage3() {
+  if (selectedDestinations.size === 0) { showToast('Pilih dulu destinasimu!'); showPage('page-dest'); return; }
+  showPage('page3');
+  document.getElementById('p3-badge-hari').textContent = '\u23f1 ' + selectedDays + ' Hari';
+  document.getElementById('p3-badge-dest').textContent = '\ud83d\udccd ' + selectedDestinations.size + ' Destinasi';
+  document.getElementById('p3-subtitle').textContent = 'Perjalanan ' + selectedDays + ' Hari di Sulawesi Selatan';
+  setTimeout(() => { renderPage3(); }, 600);
+}
+
+function renderPage3() {
+  const container = document.getElementById('p3-content');
+  const allSelected = getSelectedDestItems();
+  if (allSelected.length === 0) { container.innerHTML = '<div class="empty-state"><div class="emoji">🗺️</div><p>Belum ada destinasi dipilih.</p></div>'; return; }
+  const dayPlans = buildItinerary(allSelected, selectedDays);
+  const zoneNamesLocal = {0:"Makassar Kota",1:"Gowa & Sekitar Makassar",2:"Maros & Pangkep",3:"Malino & Pegunungan Gowa",4:"Bulukumba, Bantaeng & Jeneponto",5:"Bone & Sinjai",6:"Toraja & Enrekang",7:"Wajo, Soppeng & Sidrap",8:"Parepare & Barru",9:"Palopo & Luwu",10:"Kepulauan Selayar"};
+  const catCounts = {};
+  allSelected.forEach(d => { catCounts[d.kategori] = (catCounts[d.kategori]||0)+1; });
+  const catSummary = Object.entries(catCounts).map(([k,v]) => { const icons={pegunungan:'🏔️',pantai:'🏖️',kuliner:'🍜',museum:'🏛️'}; return (icons[k]||'📍')+' '+v+' '+k; }).join(' · ');
+  const zonesVisited = new Set(allSelected.map(d => d.zone||0));
+  const regions = [...zonesVisited].map(z => zoneNamesLocal[z]).join(', ');
+  let html = `<div class="summary-card"><div class="summary-title">📋 Ringkasan Perjalanan</div>
+    <div class="summary-row"><span>Durasi</span><span>${selectedDays} Hari</span></div>
+    <div class="summary-row"><span>Total Destinasi</span><span>${allSelected.length} Tempat</span></div>
+    <div class="summary-row"><span>Kategori</span><span>${catSummary}</span></div>
+    <div class="summary-row"><span>Wilayah</span><span style="font-size:9px;text-align:right;max-width:200px">${regions}</span></div></div>`;
+  dayPlans.forEach((dayItems, di) => {
+    if (dayItems.length === 0) { html += `<div class="day-block"><div class="day-label">Hari ${di+1}</div><div class="day-sub">Hari Perjalanan & Transit</div><div style="background:#fff;border-radius:10px;padding:14px;font-size:11px;color:#888;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)">🚗 Hari ini digunakan untuk perjalanan menuju destinasi berikutnya.</div></div>`; return; }
+    const zoneCounts = {}; dayItems.forEach(d => { const z=d.zone||0; zoneCounts[z]=(zoneCounts[z]||0)+1; });
+    const dominantZone = parseInt(Object.entries(zoneCounts).sort((a,b)=>b[1]-a[1])[0][0]);
+    html += `<div class="day-block"><div class="day-label">Hari ${di+1}</div><div class="day-sub">📍 Area: ${zoneNamesLocal[dominantZone]||'Sulawesi Selatan'}</div>`;
+    let currentHour = zoneTravelHours(0, dayItems[0].zone||0);
+    dayItems.forEach((dest, idx) => {
+      const timeStr = (() => { const base=7, total=base+currentHour, h=Math.floor(total), m=Math.round((total-h)*60); return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); })();
+      const dur = visitDuration[dest.kategori]||2;
+      const typeIcons={pegunungan:'🏔️',pantai:'🏖️',kuliner:'🍜',museum:'🏛️'};
+      const isLast = idx === dayItems.length-1;
+      let travelNote = '';
+      if (idx > 0) { const prev=dayItems[idx-1].zone||0, curr=dest.zone||0; if (prev!==curr) { const th=zoneTravelHours(prev,curr); travelNote=`<div class="travel-note">🚗 ~${th<1?Math.round(th*60)+'mnt':th+'jam'} perjalanan ke area berikutnya</div>`; currentHour+=th; } }
+      html += `${travelNote}<div class="itin-item"><div class="itin-timeline"><div class="itin-dot"></div>${!isLast?'<div class="itin-line"></div>':''}</div><div class="itin-card"><div class="itin-card-img"><img src="${dest.item.gambar}" alt="${dest.nama}" onerror="this.src='https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&fit=crop'"/></div><div class="itin-card-body"><div class="itin-type-badge">${typeIcons[dest.kategori]||'📍'} ${dest.kategori}</div><div class="itin-time">${timeStr} WIB</div><div class="itin-name">${dest.nama}</div><div class="itin-loc">📍 ${dest.item.lokasi.split(',').slice(-3).join(',').trim()}</div><div class="itin-act">🎯 ${dest.item.aktivitas}</div><div class="itin-act">💰 ${dest.item.harga}</div></div></div></div>`;
+      currentHour += dur;
+    });
+    html += '</div>';
+  });
+  html += `<div class="tips-card"><div class="tips-title">💡 Tips Perjalanan</div><div class="tips-item">✅ Siapkan akomodasi sesuai area utama<br>✅ Cek cuaca sebelum ke destinasi alam<br>✅ Bawa uang tunai untuk tiket & kuliner lokal<br>✅ Gunakan kendaraan pribadi untuk fleksibilitas<br>✅ Catat nomor darurat daerah yang dikunjungi</div></div>
+  <div class="action-row"><button class="btn-share btn-share-outline" onclick="showPage('page-dest')">Edit Destinasi</button><button class="btn-share btn-share-fill" onclick="goToPembayaran()">Simpan & Bayar</button></div>`;
+  html += footerHTML;
+  container.innerHTML = html;
+  container.scrollTop = 0;
+}
+
+/* =====================================================================
+   FOOTER HTML
+===================================================================== */
+const footerHTML = `
+  <div class="footer">
+    <div class="footer-top">
+      <img src="images/Logo LontaraTrip (potong).png" style="width:30px;height:30px;object-fit:cover;border-radius:50%;flex-shrink:0;" onerror="this.style.display='none'"/>
+      <p class="footer-desc">Smart Itinerary untuk merencanakan perjalanan terbaik di Sulawesi Selatan secara mudah dan personal.</p>
+    </div>
+    <div class="footer-grid">
+      <div><div class="fcol-title">Kontak</div><div class="fcol-item">Makassar, Sulawesi Selatan</div><div class="fcol-item"><a href="mailto:lontaratrip@gmail.com">lontaratrip@gmail.com</a></div><div class="fcol-item">0825-1436-2226</div>
+        <div class="social-row">
+          <div class="soc-btn soc-ig"><svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg></div>
+          <div class="soc-btn soc-wa"><svg viewBox="0 0 24 24" fill="white" width="13" height="13"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></div>
+        </div>
+      </div>
+      <div><div class="fcol-title">Kebijakan S&K</div><div class="fcol-item">• Kebijakan Privasi & Keamanan</div><div class="fcol-item">• Kebijakan Penggunaan Website</div></div>
+    </div>
+    <div class="footer-copy">© 2026 LontaraTrip. All Rights Reserved. | Made with <span class="heart">♥</span> in Indonesia</div>
+  </div>`;
+
+/* =====================================================================
+   DEST DATA
+===================================================================== */
+const destData = {
+  pegunungan: [
+    { nama:"Rammang-Rammang", gambar:"images/rammang2.jpg", deskripsi:"Pemandangan tebing kapur purba, menyusuri Sungai Pute,gua prasejarah, serta suasana asri nan magis.", lokasi:"Jl. Dermaga 2 Rammang - Rammang Desa Salenrang, Kabupaten Maros, Sulawesi Selatan", harga:"Harga: Mulai Rp5.000", aktivitas:"Aktivitas: Susur Sungai, Eksplorasi Gua, Fotografi", rating:"" },
+    { nama:"Bulu Dua", gambar:"images/bulu dua.jpg", deskripsi:"Panorama hutan tropis yang rimbun, danau yang indah, serta air terjun yang memukau.", lokasi:"Gattareng Toa, Kec. Mario Riwawo, Kabupaten Soppeng, Sulawesi Selatan", harga:"Harga: Mulai Rp20.000", aktivitas:"Aktivitas: Menyaksikan koloni kelelawar, Relaksasi", rating:"" },
+    { nama:"Buttu Macca", gambar:"images/buttu macca.jpg", deskripsi:"panorama Gunung Nona dan Gunung Bambapuang yang memukau dari ketinggian, ada wahana flying fox.", lokasi:"Bamba Puang, Kec. Anggeraja, Kabupaten Enrekang, Sulawesi Selatan", harga:"Harga: Mulai Rp10.000", aktivitas:"Aktivitas: Menikmati wahana rekreasi, Relaksasi", rating:"" },
+    { nama:"Negeri di Atas Awan", gambar:"images/negeri diatas awan.jpg", deskripsi:"Fenomena kabut tebal yang menyerupai lautan kapas di pagi hari, dipadukan dengan cahaya matahari terbit.", lokasi:"Lolai, Kec. Kapala Pitu, Kabupaten Toraja Utara, Sulawesi Selatan", harga:"Harga: Mulai Rp15.000", aktivitas:"Aktivitas: Lautan awan, Sunrise, Fotografi, Camping", rating:"" },
+    { nama:"Lappa Laona", gambar:"images/lappa laona.jpg", deskripsi:"Lappa Laona ini padang rerumputan hijau yang luas Cocok untuk pengunjung yang hobby untuk berjelajah.", lokasi:"Dusun Waruwue, Desa Harapan, Kec. Tanete Riaja, Kabupaten Barru, Sulawesi Selatan", harga:"Harga: Mulai Rp5.000", aktivitas:"Aktivitas: Berkuda, Panomara, Fotografi, Camping", rating:"" },
+    { nama:"Latimojong  (3.478 mdpl)", gambar:"images/latimojong.jpg", deskripsi:"Latimojong adalah pegunungan tertinggi di Sulawesi dengan alam yang masih asri.", lokasi:"Dusun Karangan, Desa Latimojong, Kec. Baraka, Kabupaten Enrekang, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Fotografi, Panorama", rating:"" },
+    { nama:"Rantekombola (3.455 mdpl)", gambar:"images/rantekombola.jpg", deskripsi:"Kawasan pegunungan yang menjadi lokasi Gunung Rantekombola sebagai puncak tertinggi.", lokasi:"Uluwai, Kec. Mengkendek, Kabupaten Tana Toraja, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Fotografi, Panorama", rating:"" },
+    { nama:"Balease (3.016 mdpl)", gambar:"images/balease.jpg", deskripsi:"Gunung Balease adalah puncak tertinggi Luwu Utara dengan medan ekstrem dan jalur hutan rapat.", lokasi:"Kec. Mappedeceng, Kabupaten Luwu Utara, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Ekspedisi, Pendakian, Camping, Fotografi", rating:"" },
+    { nama:"Gunung Karua (2.670 mdpl)", gambar:"images/karua.jpg", deskripsi:"Jalur yang lumayan sulit, kelestarian alamnya pun sangat terjaga.", lokasi:"Kecamatan bituang, Makale, kabupaten Tana Toraja, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Wisata Alam, Fotografi.", rating:"" },
+    { nama:"Gunung Kambuno (2.950 mdpl)", gambar:"images/kambuno.jpg", deskripsi:"Menawarkan keindahan alam khas pegunungan tropis dan salah satu destinasi pendakian di Luwu.", lokasi:"Kec. Limbong (Rongkong), Kab. Luwu Utara, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Berkemah", rating:"" },
+    { nama:"Gunung Sesean ( 2.100 mdpl)", gambar:"images/sesean.jpg", deskripsi:"Favorit para wisatawan karena menawarkan akses yang relatif mudah bagi pendaki pemula.", lokasi:"Sesean Matallo, Kec. Sesean, Kabupaten Toraja Utara, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Trekking Santai, Fotografi", rating:"" },
+    { nama:"Gunung Nona (1.580 mdpl)", gambar:"images/nona.jpg", deskripsi:"Menawarkan perpaduan pemandangan bukit karst yang hijau dan udara pegunungan yang sejuk.", lokasi:"Rosoan, Kec. Enrekang, Kabupaten Enrekang, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Fotografi, Relaksi", rating:"" },
+    { nama:"Lembah Lohe (1.930 mdpl)", gambar:"images/lembah lohe.jpg", deskripsi:"Lembah ini sering dijuluki sebagai Negeri Dongeng karena keindahan alamnya yang masih sangat alami", lokasi:"Lembah Loe, Kec. Parigi, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Memancing", rating:"" },
+    { nama:"Bulu Baria (2.730 mdpl)", gambar:"images/bulu baria.jpg", deskripsi:"Dikenal sebagai salah satu gunung terbersih di Sulawesi dengan konsep Zero Waste Mountain.", lokasi:"Desa Manimbahoi, Kecamatan Parigi, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian Zero Wasre, Camping", rating:"" },
+    { nama:"Bulusaraung (1.353 mdpl)", gambar:"images/bulusaraung.jpg", deskripsi:"Bagian dari Taman Nasional Bantimurung Bulusaraung yang berciri tebing terjal dan hutan tropis lebat.", lokasi:"Tompo Bulu, Kec. Balocci, Kabupaten Pangkajene Dan Kepulauan, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Lautan Awan", rating:"" },
+    { nama:"Hutan Pinus Malino", gambar:"images/malino.jpg", deskripsi:"Pemandangan hamparan pohon pinus yang luas dan hijau dengan udara sejuk, keunggulan kawasan wisata.", lokasi:"Jl. Sultan Hasanuddin, Malino, Kec. Tinggimoncong, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Mulai Rp10.000", aktivitas:"Aktivitas: Fotografi Alam, Piknik, Naik Kuda", rating:"⭐ 4.7" },
+    { nama:"Gunung Bahong Langi (1.988 mdpl)", gambar:"images/gunung bahong langi.jpg", deskripsi:"Terkenal dengan keindahan negeri di atas awan yang menakjubkan pada pagi hari.", lokasi:"Bontojai, Kec. Bontocani, Kabupaten Bone, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Lautan Awan", rating:"" },
+    { nama:"Gunung Tondong Karambu (1.700 mdpl)", gambar:"images/gunung tondong karambu.jpg", deskripsi:"Gunung ini merupakan kawasan karst terluas kedua di dunia, sementara yang terbesar ada di China.", lokasi:"Gattareng, Kec. Pujananting, Kabupaten Barru, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Lautan Awan", rating:"" },
+    { nama:"Gunung Kappire (1.100 mdpl)", gambar:"images/gunung kappire.jpg", deskripsi:"Masih banyak traveler yang belum mengetahui tempat ini karena suasananya masih asri.", lokasi:"Pange, Palakka, Kec. Barru, Kabupaten Barru, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendakian, Camping, Lautan Awan", rating:"" },
+    { nama:"Air Terjun Takapala", gambar:"images/air terjun takapala.jpg", deskripsi:"Salah satu destinasi wisata paling ikonik di kawasan dataran tinggi Malino, Kab. Gowa, Sulawesi Selatan.", lokasi:"Bonto Lerung, Kec. Tinggimoncong, Kab. Gowa, Sulawesi Selatan", harga:"Harga: Mulai Rp3.000", aktivitas:"Aktivitas: Berenang, Piknik, Menikmati Air Terjun", rating:"⭐ 4.5" },
+    { nama:"Gunung Bawakaraeng (2.830 mdpl)", gambar:"images/gunung bawakaraeng.jpg", deskripsi:"Pendakian favorit dengan hutan lumut, pemandangan eksotis, dan suhu terdingin di wilayah tersebut.", lokasi:"Gn. Perak, Kec. Sinjai Bar., Kabupaten Sinjai, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendaikian & Hiking, Fotografi", rating:"" },
+    { nama:"Gunung Bambapuang (1.021 mdpl) ", gambar:"images/gunung bambapuang.jpg", deskripsi:"Gunung ini populer sebagai destinasi pendakian ringan dan menawarkan pemandangan alam yang indah.", lokasi:"Gn. Perak, Kec. Sinjai Bar., Kabupaten Sinjai, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendaikian santai, Trail running", rating:"" },
+    { nama:"Gunung Bulu Saukang (332 mdpl)", gambar:"images/gunung bulu saukang.jpg", deskripsi:"Menawarkan jalur menantang namun singkat, cocok untuk healing singkat dekat Makassar.", lokasi:"Benteng Gajah, Kec. Tompobulu, Kabupaten Maros, Sulawesi Selatan", harga:"Harga: Tidak memiliki harga tiket masuk resmi", aktivitas:"Aktivitas: Pendaikian santai, Fotografi", rating:"" },
+    { nama:"Danau Tanralili", gambar:"images/danau tanralili.jpg", deskripsi:"Danau yang terbentuk akibat longsoran gunung hingga membentuk cekungan ke dalam.", lokasi:"Manimbahoi, Kec. Parigi, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Mulai Rp5.000", aktivitas:"Aktivitas: Pendaikian, Fotografi, Camping", rating:"" },
+    { nama:"Lembah Ramma", gambar:"images/lembah ramma.jpg", deskripsi:"Di Lembah Ramma ini, Anda akan disuguhkan kesegaran dari pegunungan yang mengelilingi.", lokasi:"Bonto Lerung, Kec. Tinggimoncong, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Mulai Rp10.000", aktivitas:"Aktivitas: Pendaikian, Bertamasya, Camping", rating:"" },
+    { nama:"Pangngalleang toppa'", gambar:"images/pangngalleang toppa.jpg", deskripsi:"Desa Wisata ini memiliki keunikan yaitu tangga refleksi anti rematik.", lokasi:"Pakatto, Kec. Bontomarannu, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Mulai Rp5.000", aktivitas:"Aktivitas: Pendaikian santai, Terapi, Fotografi", rating:"" }
+  ],
+  pantai: [
+    { nama:"Pantai Apparalang", gambar:"images/apparalang.jpg", deskripsi:"Pemandangan tebing karang memanjang laut biru jernih, dan spot cliff jumping yang memacu adrenalin.", lokasi:"Dusun Kadien, Ara, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Mulai dari 5.000", aktivitas:"Aktivitas: Berenang, Panorama Laut, Fotografi", rating:"" },
+    { nama:"Tanjung Palette", gambar:"images/tanjung palette.jpg", deskripsi:"Pemandangan tebing karang terjal yang berbatasan langsung dengan laut biru jernih Teluk Bone", lokasi:"Jl. Tj. Raya No.1, Pallette, Kec. Tanete Riattang Tim., Kabupaten Bone, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Fotografi, Berenang, Panorama, Wahana, Diving", rating:"" },
+    { nama:"Taman Nasional Taka Bonerate", gambar:"images/taman nasional taka bonerate.jpg", deskripsi:"Kawasan atol (karang cincin) terbesar ketiga di dunia, dengan keindahan terumbu karang yang luas dan utuh.", lokasi:"Jl. S. Parman No.40, Pulau Tinabo Besar, Kec. Taka Bonerate, Kab. Kepulauan Selayar, Sulawesi Selatan", harga:"Harga: WNI Rp5.000 dan WNA Rp150.000", aktivitas:"Aktivitas: Snorkeling, Island Hopping, Diving", rating:"" },
+    { nama:"Pantai Panrang Luhu", gambar:"images/panrang luhu.jpg", deskripsi:"Pantai ini menawarkan pasir putih halus, air jernih, pohon kelapa rindang, serta menyaksikan sunrise", lokasi:"Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Berenang, Sunrise, Bersantai, Fotografi", rating:"" },
+    { nama:"Pantai Topejawa", gambar:"images/topejawa.jpg", deskripsi:"Destinasi wisata keluarga yang menawarkan kombinasi kolam renang, permainan air hingga spot foto.", lokasi:"Topejawa, Kec. Mangarabombang, Kabupaten Takalar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp20.000", aktivitas:"Aktivitas: Bersantai, Fotografi, Berenang", rating:"" },
+    { nama:"Pantai Mattirotasi", gambar:"images/pantai mattirotasi.jpg", deskripsi:"Pantai terpanjang di Parepare dengan pemandangan laut, sunset, dan spot santai.", lokasi:"Jl. Mattiro Tasi No.125, Kp. Baru, Kec. Bacukiki Bar., Kota Parepare, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Bersantai, Fotografi, Menikmati sunset", rating:"" },
+    { nama:"Lasonrai Beach", gambar:"images/lasonrai beach.jpg", deskripsi:"Pantai dengan pasir putih dan pemandangan laut jernih yang cocok untuk bersantai", lokasi:"Ujunge, Batupute, Kec. Soppeng Riaja, Kabupaten Barru, Sulawesi Selatan", harga:"Harga: Mulai dari 10.000", aktivitas:"Aktivitas: Bersantai, Menikmati pemandangan", rating:"" },
+    { nama:"Pantai Akkarena", gambar:"images/pantai akkarenaa.jpg", deskripsi:"Pantai pasir hitam yang populer untuk melihat matahari terbenam & jet ski, dengan taman bermain.", lokasi:"Jalan Tanjung Bunga, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Bersantai, Fotografi, Berenang", rating:"" },
+    { nama:"Pantai Lemo-Lemo", gambar:"images/pantai lemolemo.jpg", deskripsi:"Pantai dengan pasir putih dan air laut jernih serta suasana yang tenang.", lokasi:"Tanah Lemo, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Bersantai, Fotografi, Berenang, Snorkeling", rating:"" },
+    { nama:"Pantai Indah Bosowa", gambar:"images/pantai bosowa.jpg", deskripsi:"Pantai populer dengan panorama indah dan suasana santai dekat pusat kota Makassar.", lokasi:"Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Bersantai, Fotografi, Berenang,Sunset", rating:"" },
+    { nama:"Pantai Biru", gambar:"images/pantai biru.jpg", deskripsi:"Pantai dengan air laut biru jernih dan suasana tenang yang cocok untuk wisata keluarga.", lokasi:"Jalan Tanjung Bunga, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Bersantai, Menikmati sunset, Berenang", rating:"" },
+    { nama:"Pantai Pinang", gambar:"images/pantai pinang.jpg", deskripsi:"Pantai pasir putih terpencil yang tenang dengan pohon palem, snorkeling & resor ekologi di sekitarnya.", lokasi:"Desa Lowa/Patilereng, Kecamatan Bontosikuyu, Kabupaten Kepulauan Selayar, Sulawesi Selatan.", harga:"Harga: Gratis", aktivitas:"Aktivitas: Snorkeling, Berenang, Bersantai", rating:"" },
+    { nama:"Pantai Tanjung Bira", gambar:"images/tanjung bira.jpg", deskripsi:"Tanjung Bira adalah Pantai yang terkenal dengan pasir putihnya ini sangat nyaman dan mudah dijangkau.", lokasi:"Bira, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Mulai dari Rp20.000", aktivitas:"Aktivitas: Snorkeling, Berenang, Fotografi", rating:"⭐ 4.6" },
+    { nama:"Pantai Losari", gambar:"images/losari.jpg", deskripsi:"Pantai ini terkenal dengan panorama lautnya yang indah dan menawan, terutama saat matahari terbenam.", lokasi:"Jl. Somba OPU No.57, Maloku, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Menikmati Sunset, Fotografi, Kuliner", rating:"⭐ 4.6" },
+    { nama:"Pantai Bara", gambar:"images/pantai baraa.jpg", deskripsi:"Pantai berpasir putih dengan air laut jernih, suasana tenang, dan pemandangan alam yang masih alami.", lokasi:"Bira, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Mulai dari Rp15.000", aktivitas:"Aktivitas: Berenang, Camping, Fotografi, Menikmati sunset", rating:"" },
+    { nama:"Pantai Ujung Suso", gambar:"images/pantai ujung suso.jpg", deskripsi:"Pantai dengan nuansa Bali, pasir putih, dengan pemandangan laut indah yang unik.", lokasi:"Mabonta, Kec. Burau, Kabupaten Luwu Timur, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Bersantai, Fotografi, Berenang", rating:"" },
+    { nama:"Pantai Marina", gambar:"images/pantai marina.jpg", deskripsi:"Pantai dengan konsep wisata keluarga, fasilitas lengkap, dan suasana santai di tepi laut.", lokasi:"Baruga, Kec. Pajukukang, Kabupaten Bantaeng, Sulawesi Selatan", harga:"Harga: Dewasa Rp40.000 dan Anak Rp10.000", aktivitas:"Aktivitas: Bersantai, Menikmati pemandangan", rating:"" },
+    { nama:"Pantai Seruni", gambar:"images/pantai seruni.jpg", deskripsi:"Pantai hasil reklamasi dengan pemandangan indah, bersih, dan menjadi ikon wisata Bantaeng.", lokasi:"Jl. Mawar, Pallantikang, Kec. Bantaeng, Kabupaten Bantaeng, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati sunset, Jogging, Bersantai", rating:"" },
+    { nama:"Pantai Galesong", gambar:"images/pantai galesong.jpg", deskripsi:"Pantai dengan pemandangan laut luas, pasir gelap, dan kawasan wisata yang nyaman.", lokasi:"Desa Tamalate, Kecamatan Galesong Utara, Kabupaten Takalar, Sulawesi Selatan.", harga:"Harga: Mulai dari Rp15.000", aktivitas:"Aktivitas: Bersantai, Berenang, Bermain air", rating:"" },
+    { nama:"Pantai Tanjung Bayang", gambar:"images/pantai tanjung bayang.jpg", deskripsi:"Pantai Tanjung Bayang adalah pantai tenang di Makassar, cocok untuk santai dan menikmati sunset.", lokasi:"Selat, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Bersantai, Berenang, Bermain air", rating:"" },
+    { nama:"Pantai Barugaya Punaga", gambar:"images/pantai barugaya punaga.jpg", deskripsi:"Pantai Barugaya Punaga adalah pantai indah di Takalar dengan air jernih dan suasana tenang.", lokasi:"Punaga, Kec. Mangarabombang, Kabupaten Takalar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp15.000", aktivitas:"Aktivitas: Bersantai, Menikmat Sunset, Bermain Air", rating:"" },
+    { nama:"Pantai Anging Mammiri", gambar:"images/pantai anging mammiri.jpg", deskripsi:"Pantai Angin Mammiri adalah pantai santai di Makassar dengan angin sepoi dan suasana tenang.", lokasi:"Jl. Metro Tj. Bunga, Tj. Merdeka, Kec. Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Bersantai, Bermain Air, Menikmati Sunset", rating:"" },
+    { nama:"Pantai Tanjung Barat Barombong", gambar:"images/pantai barombong.jpg", deskripsi:"Menawarkan hamparan laut terbuka dengan suasana lebih sepi di Makassar, cocok untuk melepas penat.", lokasi:"Unnamed Road, Barombong, Kec. Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Bersantai, Bermain Air, Menikmati Sunset", rating:"" },
+    { nama:"Pantai Tanjung Layar Putih", gambar:"images/pantai tanjung layar putih.jpg", deskripsi:"Pantai Tanjung Layar Putih memiliki pasir terang dan panorama laut yang luas di Makassar.", lokasi:"Unnamed Road, Tanjung Merdeka, Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Bersantai, Fotografi., Menikmati Sunset", rating:"" },
+    { nama:"Pantai Laguna", gambar:"images/pantai laguna.jpg", deskripsi:"Pantai Laguna adalah pantai dengan air jernih dan suasana tenang di Barru.", lokasi:"Pao-Pao, Kec. Tanete Rilau, Kabupaten Barru, Sulawesi Selatan", harga:"Harga: Mulai dari Rp20.000", aktivitas:"Aktivitas: Berenang, Menikmati Pemandangan", rating:"" },
+    { nama:"Wisata Pantai Bintang Galesong", gambar:"images/pantai galesong.jpg", deskripsi:"Wisata Pantai Bintang Galesong adalah pantai populer dengan area rekreasi keluarga di Galesong, Takalar.", lokasi:"Jl. Karaeng Salamaka Kassi Lompo, Boddia, Kec. Galesong, Kabupaten Takalar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp15.000", aktivitas:"Aktivitas: Bermain Wahana Air, Bersantai", rating:"" },
+    { nama:"Pantai Marumasa", gambar:"images/pantai marumasa.jpg", deskripsi:"Pantai Marumasa memiliki suasana pantai yang masih alami dengan garis pantai yang tenang di Bulukumba.", lokasi:"Darubiah, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Mulai dari Rp3.000", aktivitas:"Aktivitas: Bermain Air, Bersantai, Menikmati Sunset", rating:"" },
+    { nama:"Sunset Quay Best View", gambar:"images/sunset quay.jpg", deskripsi:"Spot tepi laut untuk menikmati pemandangan matahari terbenam di Makassar.", lokasi:"Kec. Makassar, Kota Makassar, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Menikmati Sunset, Bersanati, Fotografi", rating:"" },
+    { nama:"Pantai Pulau Liukang Loe", gambar:"images/pantai liukang loe.jpg", deskripsi:"Terkenal dengan pasir putih halus, air laut biru toska yang sangat jernih, serta terumbu karang terawat", lokasi:"Darubiah, Kec. Bonto Bahari, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Snorkeling, Berenang, Menjelajah Pulau", rating:"" },
+    { nama:"Pantai Pa'badilang", gambar:"images/pantai pabadilang.jpg", deskripsi:"Pantai Pabadilang memiliki garis pantai alami dengan suasana sepi di Kepulauan Selayar.", lokasi:"Pa'baddilang, Kab. Kepulauan Selayar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Bersantai, Bermain Air, Menyusuri Pantai", rating:"" },
+    { nama:"Pulau Bulupolo", gambar:"images/pulau bulupolo.jpg", deskripsi:"Menawarkan pasir putih bersih, air jernih, dan pemandangan pegunungan.", lokasi:"Harapan, Kec. Malili, Kabupaten Luwu Timur, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Diving, Snorkling, Memancing", rating:"" },
+    { nama:"Pulau Kodingareng Keke", gambar:"images/kodingareng keke.jpg", deskripsi:"Memiliki pemandangan laut yang masih terjaga dan tempat yang sempurna untuk snorkeling.", lokasi:"Gusung, P. Kondingareng, Kec. Ujung Tanah, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp20.000", aktivitas:"Aktivitas: Berenang, Snorkling, Menikmati Sunset", rating:"" },
+    { nama:"Pantai Pulau Kayangan", gambar:"images/pantai pulau kayangan.jpg", deskripsi:"Destinasi wisata pantai berpasir putih seluas 1 hektar yang terletak hanya 0,8 km dari pusat kota Makassar.", lokasi:"Lae-Lae, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Memancing, Snorkling, Menikmati Sunset", rating:"" },
+    { nama:"Pulau Laelae", gambar:"images/pulau laelae.jpg", deskripsi:"Destinasi wisata pantai berpasir putih seluas 1 hektar yang terletak hanya 0,8 km dari pusat kota Makassar.", lokasi:"Lae-Lae, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Memancing, Snorkling, Menikmati Sunset", rating:"" }
+  ],
+  kuliner: [
+    { nama:"Coto Nusantara", gambar:"images/coto.jpg", deskripsi:"Warung coto terkenal dengan kuah kental dan isian daging/jeroan sapi empuk, disajikan dengan ketupat.", lokasi:"Jl. Nusantara Baru No.86, Pattunuang, Kec. Wajo, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp30.000", aktivitas:"Aktivitas: Menikmati Coto Khas Makassar", rating:"" },
+    { nama:"Rumah Makan Kapurung ITA", gambar:"images/kapurung.jpg", deskripsi:"Menyajikan kapurung autentik khas Palopo dengan kuah kuning segar, sagu kenyal, dan sayuran lengkap.", lokasi:"Salekoe, Kec. Wara Tim., Kota Palopo, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati Kapurung Khas Palopo", rating:"" },
+    { nama:"Konro Karebosi", gambar:"images/konro.jpg", deskripsi:"Hidangan iga sapi bakar dengan tekstur empuk dan cita rasa khas berkat perpaduan rempah Nusantara.", lokasi:"Jl. Gn. Lompobattang No.41-43, Pisang Utara, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp60.000", aktivitas:"Aktivitas: Menikmati Konro Khas Makassar", rating:"⭐ 4.3" },
+    { nama:"Palekko 27'e", gambar:"images/palekko.jpg", deskripsi:"Menyajikan masakan khas Bugis, nasu palekko (bebek pedas), terkenal dengan cita rasa pedas yang otentik.", lokasi:"Jl. Akasia, Bulu Pabbulu, Kec. Tempe, Kabupaten Wajo, Sulawesi Selatan", harga:"Harga: Mulai dari Rp85.000", aktivitas:"Aktivitas: Menikmati Bebek Palekko Khas Wajo", rating:"" },
+    { nama:"Dapur Kue Gambung", gambar:"images/kue gambung.jpg", deskripsi:"Menyajikan kue gambung terbuat dari tepung, gula, telur, air kelapa, dan kelapa parut, rasa kue ini manis.", lokasi:"Suli, Kec. Suli, Kabupaten Luwu, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati Kue Gambung Khas Luwu", rating:"" },
+    { nama:"Pallubasa Serigala", gambar:"images/pallubasa.jpeg", deskripsi:"Pallubasa salah satu makanan khas Makassar, Berupa olahan daging dengan kuah yang khas.", lokasi:"Jl. Serigala No.56, Mamajang Dalam, Kec. Mamajang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp39.000", aktivitas:"Aktivitas: Menikmati Pallubasa Khas Makassar", rating:"⭐ 4.7" },
+    { nama:"Jalangkote & Lumpia Lasinrang", gambar:"images/lumpia & jalangkote lasinrang.png", deskripsi:"Kuliner legendaris yang terkenal dengan jalangkote dan lumpia-nya renyah, menawarkan cita rasa gurih.", lokasi:"Jl. Lasinrang No.11A, Sawerigading, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp8.000", aktivitas:"Aktivitas: Menikmati Aneka Gorengan Lasinrang", rating:"" },
+    { nama:"Cahaya Oleh-Oleh", gambar:"images/cahaya.png", deskripsi:"Pusat oleh-oleh khas Makassar dengan berbagai pilihan makanan dan kerajinan tradisional.", lokasi:"Jl. Sulawesi No.181, Melayu Baru, Kec. Wajo, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari 19.000", aktivitas:"Aktivitas: Berbelanja Oleh-Oleh Khas Makassar", rating:"" },
+    { nama:"Ati Raja", gambar:"images/ati raja.jpg", deskripsi:"Bakso yang dikenal dengan kelezatan dan kualitasnya yang tinggi dibuat dari daging sapi pilihan.", lokasi:"Jl. Gn. Merapi No.170, Lajangiru, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp37.000", aktivitas:"Aktivitas: Menikmati Bakso Ati Raja", rating:"⭐ 4.4" },
+    { nama:"Bolu Cukke \"Usaha Rahmah\"", gambar:"images/bolu-cukke-rahmah.jpg", deskripsi:"Bolu Cukke, kue tradisional berbahan tepung beras, gula merah, dan telur dengan tekstur padat lembut.", lokasi:"Jennae, Kec. Lili Riaja, Kabupaten Soppeng, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati Bolu Cukke Khas Soppeng", rating:"" },
+    { nama:"Ikan Asap Bu Taty", gambar:"images/ikan asap.jpg", deskripsi:"Ikan asap adalah ikan yang diawetkan dengan proses pengasapan menggunakan asap kayu.", lokasi:"Singa, Kec. Hero Lange-Lange, Kabupaten Bulukumba, Sulawesi Selatan", harga:"Harga: Mulai dari Rp40.000", aktivitas:"Aktivitas: Menikmati Ikan Asap Khas Bulukumba", rating:"" },
+    { nama:"Kuliner Apang Pella Lawawoi", gambar:"images/appang pella.jpg", deskripsi:"Kue coklat lembut dengan rasa manis legit, disajikan hangat dengan kelapa parut.", lokasi:"Lawawoi, Kec. Watang Pulu, Kabupaten Sidenreng Rappang, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati Kue Appang Khas Sidrap", rating:"" },
+    { nama:"Nennu-nennu Qirana", gambar:"images/nennu.jpg", deskripsi:"Helaian tipis seperti benang kusut, digoreng hingga renyah di luar dan lembut di dalam.", lokasi:"Batu-Batu, Kec. Marioriawa, Kabupaten Soppeng, Sulawesi Selatan", harga:"Harga: Mulai dari Rp20.000", aktivitas:"Aktivitas: Menikmati Makanan Khas Soppeng", rating:"" },
+    { nama:"Oleh-Oleh SumbaOpu", gambar:"images/oleh.jpg", deskripsi:"Pusat oleh-oleh khas Makassar dengan berbagai pilihan makanan dan kerajinan tradisional.", lokasi:"Jl. Nusantara No.18, Pattunuang, Kec. Wajo, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari 20.000", aktivitas:"Aktivitas: Berbelanja Oleh-Oleh Khas Makassar", rating:"" },
+    { nama:"Sop Saudara Dzakwan", gambar:"images/sop saudara.jpg", deskripsi:"Hidangan khas Pangkep dengan daging dan kuah santan gurih, disajikan dengan nasi, bandeng bakar.", lokasi:"Jl. Sultan Hasanuddin, Padoang Doangan, Kec. Pangkajene, Kab. Pangkajene Sulawesi Selatan", harga:"Harga: Mulai dari Rp25.000", aktivitas:"Aktivitas: Menikmati Sop Saudara dan Ikan Bakar", rating:"" },
+    { nama:"Pisang Epe' Mandiri", gambar:"images/pisang.jpg", deskripsi:"Pisang yang dibakar lalu dipipihkan dan disajikan dengan saus gula merah khas yang manis legit.", lokasi:"Jl. Ali Malaka No.45, Maloku, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati Pisang Epe di Pantai Losari", rating:"" },
+    { nama:"Mie Titi", gambar:"images/mie-titi.jpg", deskripsi:"Mie kering dengan kuah kental khas Makassar yang lezat.", lokasi:"Jl. Boulevard Ruko Ruby No.25 Blok 2H, Masale, Panakkukang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp50.000", aktivitas:"Aktivitas: Kuliner, Mencicipi mie titi", rating:"" },
+    { nama:"Mantao Pare", gambar:"images/bakpao.jpg", deskripsi:"Mantao Pare adalah roti kukus lembut dan manis khas Parepare.", lokasi:"Labukkang, Kec. Ujung, Kota Parepare, Sulawesi Selatan", harga:"Harga: Mulai dari Rp60.000", aktivitas:"Aktivitas: Menikmati Mantao Khas Parepare", rating:"" },
+    { nama:"Oleh-Oleh Khas Selayar", gambar:"images/oleh-oleh-selayar.jpg", deskripsi:"Pusat oleh-oleh khas Kepulauan Selayar.", lokasi:"Jl. Jend. Sudirman No.104, Benteng, Kec. Benteng, Kab. Kepulauan Selayar, Sulawesi Selatan", harga:"Harga: Mulai dari 10.000", aktivitas:"Aktivitas: Berbelanja Oleh-Oleh Khas Selayar", rating:"" },
+    { nama:"Kepala Ikan Mappanyuki Pallumara", gambar:"images/ikan.jpg", deskripsi:"Kuliner kepala ikan khas Makassar dengan bumbu pallumara yang gurih dan segar.", lokasi:"Jl. A. Mappanyukki No.36C, Mario, Kec. Mariso, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp45.000", aktivitas:"Aktivitas: Menikmati Kelapa Ikan Khas Makassar", rating:"" },
+    { nama:"Futry Bakery & Cake Maros", gambar:"images/futry.jpg", deskripsi:"Futry Bakery & Cake toko roti dan kue dengan berbagai pilihan bakery dan oleh-oleh khas.", lokasi:"Bontoa, Kec. Mandai, Kabupaten Maros, Sulawesi Selatan", harga:"Harga: Mulai dari Rp2.750", aktivitas:"Aktivitas: Berbelanja roti, kue, dan oleh-oleh", rating:"" },
+    { nama:"Donat Kampar Galesong", gambar:"images/donat-kampar-galesong.jpg", deskripsi:"Donat tradisional dengan tekstur lembut dan rasa manis sederhana, khas disajikan sebagai camilan.", lokasi:"Jl. Poros Galesong Utara, Bontolebang, Kec. Galesong Utara, Kab. Takalar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp25.000", aktivitas:"Aktivitas: Menikmati Donat Kampar", rating:"" },
+    { nama:"Otak-Otak Sunny", gambar:"images/otak-otak-sunny.jpg", deskripsi:"Toko oleh-oleh khas Makassar yang terkenal dengan otak-otak ikan tenggiri dan aneka jajanan tradisional.", lokasi:"Jl. Singa No.9, Bonto Biraeng, Kec. Mamajang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp105.000", aktivitas:"Aktivitas: Berbelanja Otak-Otak Khas Makassar", rating:"" },
+    { nama:"Pisang Ijo Oleh-Oleh Makassar", gambar:"images/pisang ijo.jpg", deskripsi:"Menyediakan pisang ijo khas Makassar dengan rasa manis dan segar.", lokasi:"Jl. Talasalapang No.11, Karunrung, Kec. Rappocini, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp20.000", aktivitas:"Aktivitas: Menikmati Pisang Ijo Khas Makassar", rating:"" },
+    { nama:"Dangke Enrekang", gambar:"images/dangke.jpg", deskripsi:"Makanan khas berupa olahan susu kerbau/sapi yang mirip keju.", lokasi:"Mata Allo, Kec. Alla, Kabupaten Enrekang, Sulawesi Selatan", harga:"Harga: Mulai dari Rp15.000", aktivitas:"Aktivitas: Menikmari Dangke Khas Enrekang", rating:"" },
+    { nama:"Gratia Tori' (Kue Khas Toraja)", gambar:"images/gratia-tori.jpg", deskripsi:"Kue tradisional dengan cita rasa manis yang sering dijadikan oleh-oleh.", lokasi:"Lapandan, Kec. Makale, Kabupaten Tana Toraja, Sulawesi Selatan", harga:"Harga: Mulai dari Rp45.000", aktivitas:"Aktivitas: Menikmati Gratia Tori' Khas Toraja", rating:"" },
+    { nama:"Putu Cangkir", gambar:"images/putu-cangkir.jpg", deskripsi:"Putu Cangkiri Makassar jajanan tradisional berbahan tepung beras dengan rasa manis dan tekstur lembut.", lokasi:"Jl. Sultan Alauddin, Pa'baeng-Baeng, Kec. Tamalate, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp2.500", aktivitas:"Aktivitas: Menikmati Putu Cangkir Khas Makassar", rating:"" },
+    { nama:"Sop Ubi", gambar:"images/sop-ubi.jpg", deskripsi:"Sop Ubi Makassar kuliner khas berupa sup ubi dengan kuah gurih dan isian lengkap yang populer di Makassar.", lokasi:"Jl. Minasa Upa No.8D Blok A5, Karunrung, Rappocini, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati Sop Ubi Khas Makassar", rating:"" },
+    { nama:"Coto Kuda", gambar:"images/coto-kuda.jpg", deskripsi:"Coto Kuda Jeneponto kuliner khas dengan kuah gurih berbahan daging kuda, terkenal di daerah Jeneponto.", lokasi:"Belokallong, Balang Toa, Kec. Binamu, Kabupaten Jeneponto, Sulawesi Selatan", harga:"Harga: Mulai dari Rp22.000", aktivitas:"Aktivitas: Menikmati Coto Kuda Khas Jeneponto", rating:"" },
+    { nama:"Bebek Palekko", gambar:"images/bebek-palekko.jpg", deskripsi:"Bebek Palekko khas Sidrap kuliner pedas berbahan bebek dengan bumbu khas Bugis yang kuat.", lokasi:"Jalan PLN, Arawa, Kec. Watang Pulu, Kabupaten Sidenreng Rappang, Sulawesi Selatan", harga:"Harga: Mulai dari Rp25.000", aktivitas:"Aktivitas: Menikmati Bebek Palekko Khas Sidrap", rating:"" },
+    { nama:"Sarabba Sungai Cerekan", gambar:"images/sarabba.jpg", deskripsi:"Minuman khas Makassar, yang berbahan dasar jahe, gula aren, santan, dan kuning telur.", lokasi:"Jl. Sungai Cerekang No.33-29, Gaddong, Kec. Bontoala, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp10.000", aktivitas:"Aktivitas: Menikmati Sarabba Khas Makassar", rating:"" }
+  ],
+  museum: [
+    { nama:"Museum Batara Guru", gambar:"images/museum batara guru.jpg", deskripsi:"Museum bekas Istana Raja Luwu dengan arsitektur Eropa dan koleksi benda bersejarah kerajaan.", lokasi:"Jl. Andi Jemma No.1, Kel. Batupasi, Kecamatan Wara Utara, Kota Palopo, Sulawesi Selatan", harga:"Harga: Sukarela", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Nekara", gambar:"images/museum nekara.jpg", deskripsi:"Menyimpan peninggalan budaya, terutama koleksi Nekara perunggu, salah satu terbesar di Asean.", lokasi:"Bontobangung, Kec. Bontoharu, Kab. Kepulauan Selayar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Benteng Rotterdam", gambar:"images/benteng rotterdam.jpg", deskripsi:"Benteng Rotterdam atau Benteng Ujung Pandang adalah benteng peninggalan Kerajaan Gowa-Tallo.", lokasi:"Jl. Ujung Pandang, Bulo Gading, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Walking Tour, Budaya, Edukasi", rating:"⭐ 4.5" },
+    { nama:"Museum Kupu-kupu Bantimurung", gambar:"images/museum kupu bantimurung.jpg", deskripsi:"Museum ini menyimpan ratusan jenis kupu-kupu yang telah diawetkan, total mencapai sekitar 166 jenis", lokasi:"Kawasan TWA Bantimurung, Desa Jenetaesa, Kec. Simbang, Kab. Maros, Sulawesi Selatan", harga:"Harga: WNI Rp5.000 dan WNA Rp150.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Colliq Pujie", gambar:"images/Museum Colliq Pujie.jpg", deskripsi:"Menyuguhkan narasi perjalanan intelektual Colliq Pujie, termasuk visualisasi digital warisan budaya Barru.", lokasi:"Alun-alun kota, Barru, Kabupaten Barru, Sulawesi Selatan", harga:"Harga: Dewasa Rp15.000 dan Anak Rp5.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Monumen Mandala", gambar:"images/monumen mandala.png", deskripsi:"Monumen ini menyimpan koleksi penting, seperti relief, 24 diorama, pakaian perjuangan, dan senjata.", lokasi:"Jl. Jend. Sudirman, Sawerigading, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Harga: Mulai dari Rp5.000", aktivitas:"Aktivitas: Edukasi Sejarah, Eksplorasi Monumen", rating:"⭐ 4.5" },
+    { nama:"Museum Karaeng Pattingalloang", gambar:"images/Museum Karaeng Pattingalloang.jpg", deskripsi:"Museum ini menyimpan benda-benda peninggalan bersejarah Kerajaan Gowa-Tallo.", lokasi:"Jl. Abd. Kadir, Benteng Somba Opu, Kec. Barombong, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Dewasa Rp3.000 dan Anak Rp2.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Ne'Gandeng", gambar:"images/Museum Ne_ Gandeng.jpg", deskripsi:"Koleksi Museum Ne' Gandeng berupa batu menhir, patung Ne' Gandeng, patung kerbau, dan gong belang.", lokasi:"Malakiri, Tagari, Kec. Balusu, Kabupaten Toraja Utara, Sulawesi Selatan", harga:"Mulai dari Rp10.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Daerah Maros", gambar:"images/Museum Daerah Maros.jpg", deskripsi:"Koleksi foto dan benda-benda yang berhubungan dengan sejarah, kebudayaan, dan arkeologi di Maros.", lokasi:"Jl. Lanto Dg. Pasewang, Pettuadae, Kec. Turikale, Kabupaten Maros, Sulawesi Selatan", harga:"Harga: Dewasa Rp15.000, Anak Rp5.000, WNA Rp50.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Benteng Somba Opu", gambar:"images/benteng somba opu (1).jpg", deskripsi:"Benteng peninggalan Kesultanan Gowa yang dibangun oleh Raja Gowa ke-9 pada tahun 1525.", lokasi:"Jl. Daeng Tata, Benteng Somba Opu, Kec. Barombong, Kota Makassar, Sulawesi Selatan", harga:"Mulai dari Rp3.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Buntu Kalando", gambar:"images/Museum Buntu Kalando.jpg", deskripsi:"Museum ini menjadi tempat pelestarian benda-benda peninggalan budaya Tana Toraja.", lokasi:"RW.lobe, Tongko Sarapung, Kec. Sangalla, Kabupaten Tana Toraja, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Fotografi, Eksplorasi Budaya Toraja", rating:"⭐ 4.2" },
+    { nama:"Museum Kota Makassar", gambar:"images/museum kota makassar.jpg", deskripsi:"Menyimpan informasi bersejarah mengenai identitas Kota Makassar, sejarah, dan budaya masyarakatnya.", lokasi:"Jl. Balaikota No.11, Baru, Kec. Ujung Pandang, Kota Makassar, Sulawesi Selatan", harga:"Mulai dari Rp10.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Pongtiku Rantepao", gambar:"images/museum pontingku rantepao.jpg", deskripsi:"Pelestarian koleksi yang menggambarkan sejarah, budaya, serta nilai tradisi masyarakat suku Toraja.", lokasi:"Jl. Landorundun No.21, Penanian, Kec. Rantepao, Kabupaten Toraja Utara, Sulawesi Selatan", harga:"Harga: Secara sukarela", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Nene' Mallomo", gambar:"images/Museum Nene_ Mallomo.jpg", deskripsi:"Museum kebanggaan masyarakat Sidrap, untuk mengenang warisan budaya serta sejarah peradaban masyarakat Bugis.", lokasi:"Jl. Usman Isa, Pangkajene, Kec. Maritengngae, Kab. Sidenreng Rappang, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Saoraja Mallangga", gambar:"images/Museum Saoraja Mallangga.jpg", deskripsi:"Menyimpan peninggalan kerajaan, didirikan tahun 1933 di bekas rumah adat (Saoraja)", lokasi:"Jl. Ahmad Yani No. 25, Kel. Padduppa, Kec. Tempe, Kabupaten Wajo, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum BJ Habibie", gambar:"images/museum bj habibie.jpg", deskripsi:"Memamerkan barang-barang pribadi, baju, serta penghargaan yang diraih oleh B.J. Habibie dan Ibu Ainun.", lokasi:"Jl. Alwi Abdul Djalil Habibie No.1, Mallusetasi, Kec. Ujung, Kota Parepare, Sulawesi Selatan", harga:"Harga: Gratis", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Landorundun", gambar:"images/museum-landorundun.png", deskripsi:"Museum khusus yang memamerkan benda-benda tentang Suku Toraja, yang dibangun pada tahun 1995.", lokasi:"Jl. Usman Isa, Pangkajene, Kec. Maritengngae, Kab. Sidenreng Rappang, Sulawesi Selatan", harga:"Harga: Dewasa Rp15.000, Anak Rp5.000, WNA Rp50.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Villa Yuliana", gambar:"images/Museum Villa Yuliana.jpg", deskripsi:"Bangunan dengan arsitektur unik dan warna mencolok, campuran antara arsitektur neo-klasik Eropa dan Bugis.", lokasi:"Jl. Pengayoman, No. 1, Kel.Botto, Kec.Lalabata, Watansoppeng, Soppeng, Sulawesi Selatan", harga:"Harga: Dewasa Rp25.000 dan Anak Rp20.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Taman Budaya dan Museum Bumi Lasinrang", gambar:"images/Taman Budaya dan Museum Bumi Lasinrang.jpg", deskripsi:"Pusat pelestarian warisan budaya, sejarah lokal, dan edukasi, untuk memperkuat identitas budaya muda.", lokasi:"Jl. Jend. Soekawati, Watang Sawitto, Kab. Pinrang, Sulawesi Selatan", harga:"Harga: Mulai dari Rp2.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" },
+    { nama:"Museum Balla Lompoa", gambar:"images/balla lompoa.jpg", deskripsi:"Museum Balla Lompoa adalah museum budaya yang menyimpan peninggalan Kerajaan Gowa di Sungguminasa.", lokasi:"Jl. K. H. Wahid Hasyim No.39, Sungguminasa, Kec. Somba Opu, Kabupaten Gowa, Sulawesi Selatan", harga:"Harga: Mulai dari Rp2.000", aktivitas:"Aktivitas: Menjelajah Koleksi, Belajar Sejarah", rating:"" }
+  ]
+};
+</script>
+</body>
+</html>
